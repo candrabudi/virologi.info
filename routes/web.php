@@ -25,6 +25,6 @@ Route::get('/products', function () {
     return view('products.index');
 });
 
-Route::get('/threat', function () {
+Route::get('/threat-map', function () {
     return view('raven');
 });
