@@ -1,1108 +1,1653 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 
 <head>
-    <meta charset="utf-8">
-    <title>Live Cyber Threat Map</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        malware: '#ef4444',
-                        phishing: '#a855f7',
-                        exploit: '#22d3ee',
-                        cyberblue: '#00bfff',
-                        gridline: '#1e293b'
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'system-ui', 'sans-serif'],
-                        mono: ['Consolas', 'Menlo', 'monospace']
-                    }
-                }
-            }
-        }
-    </script>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LIVE CYBER THREAT MAP</title>
 
     <style>
+        @import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&display=swap");
+        @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
+
+        * {
+            box-sizing: border-box
+        }
+        .panel.mobile-attacks {
+            display: none;
+        }
+        :root {
+            --bg: #070b14;
+            --panel: #0b1220;
+            --panel2: #0a1020;
+
+            --grid: rgba(0, 180, 255, .10);
+            --dot: rgba(255, 255, 255, .10);
+
+            --neon: #00b4ff;
+            --neon2: #38d4ff;
+
+            --cyan: #00e5ff;
+            --green: #4ade80;
+            --red: #ff6b6b;
+
+            --text: #ffffff;
+            --muted: #94a3b8;
+            --muted2: #64748b;
+
+            --stroke: #1e293b;
+            --shadow: rgba(0, 0, 0, .6);
+
+            --glow: rgba(0, 180, 255, .35);
+            --glowC: rgba(56, 212, 255, .45);
+        }
+
+
         html,
         body {
-            width: 100%;
-            height: 100%;
-            margin: 0;
-            overflow: hidden;
-            font-family: 'Inter', system-ui, sans-serif;
-            /* padding-top: 30px; */
-            padding-bottom: 0;
-            background:
-                linear-gradient(180deg, rgba(255, 255, 255, 0.03) 0%, rgba(0, 0, 0, 0.95) 40%, #000 100%),
-                linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-                linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-                radial-gradient(circle at 50% 20%, rgba(0, 180, 255, 0.15), transparent 55%);
-            background-size:
-                100% 100%,
-                80px 80px,
-                80px 80px,
-                100% 100%;
-            background-color: #000;
+            height: 100%
         }
+
+        body {
+            margin: 0;
+            background:
+                radial-gradient(1200px 800px at 50% 20%, rgba(0, 180, 255, .14), transparent 60%),
+                radial-gradient(1200px 800px at 55% 40%, rgba(0, 229, 255, .10), transparent 65%),
+                var(--bg);
+            font-family: Inter, system-ui, -apple-system, Segoe UI, sans-serif;
+            overflow: hidden;
+            color: var(--text);
+        }
+
 
         body::before {
-            content: '';
+            content: "";
             position: fixed;
             inset: 0;
-            background: linear-gradient(to bottom,
-                    transparent 0%,
-                    rgba(0, 180, 255, 0.05) 50%,
-                    transparent 100%);
-            background-size: 100% 6px;
-            animation: scan 6s linear infinite;
-            pointer-events: none;
-        }
-
-        @keyframes scan {
-            from {
-                background-position-y: 0;
-            }
-
-            to {
-                background-position-y: 100%;
-            }
-        }
-
-
-        #map-container {
-            position: absolute;
-            top: 60px;
-            left: 0;
-            width: 100%;
-            height: calc(100% - 60px);
-            z-index: 10;
-            touch-action: none;
-            transform-origin: center center;
-            transition: transform 0.05s ease-out, left 0.3s ease, right 0.3s ease, width 0.3s ease;
-
-            opacity: 0.55;
-
-            filter:
-                saturate(0.7) brightness(0.85) contrast(0.95) blur(0.15px);
-
-            mix-blend-mode: screen;
-        }
-
-        #map-container::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            pointer-events: none;
-            z-index: 15;
             background:
-                linear-gradient(to bottom,
-                    rgba(0, 0, 0, 0.85) 0%,
-                    rgba(0, 0, 0, 0.45) 8%,
-                    rgba(0, 0, 0, 0.15) 16%,
-                    rgba(0, 0, 0, 0) 30%,
-                    rgba(0, 0, 0, 0) 70%,
-                    rgba(0, 0, 0, 0.15) 84%,
-                    rgba(0, 0, 0, 0.45) 92%,
-                    rgba(0, 0, 0, 0.85) 100%);
+                linear-gradient(to right, var(--grid) 1px, transparent 1px),
+                radial-gradient(circle, var(--dot) 1px, transparent 1px);
+            background-size: 90px 90px, 22px 22px;
+            opacity: .35;
+            pointer-events: none;
+            z-index: 1
         }
 
-
-        #map-container::before {
-            content: '';
-            position: absolute;
+        body::after {
+            content: "";
+            position: fixed;
             inset: 0;
-            pointer-events: none;
             background:
-                radial-gradient(circle at 50% 40%,
-                    rgba(0, 180, 255, 0.12),
-                    transparent 60%);
-            mix-blend-mode: screen;
-            z-index: 11;
-        }
-
-        #map-interact-layer {
-            position: absolute;
-            inset: 0;
-            cursor: grab;
-            z-index: 20;
-        }
-
-        #map-interact-layer:active {
-            cursor: grabbing;
-        }
-
-        iframe {
-            position: absolute;
-            inset: 0;
-            width: 100%;
-            height: 100%;
-            border: 0;
+                linear-gradient(to bottom, rgba(0, 0, 0, .55), transparent 30%, transparent 70%, rgba(0, 0, 0, .65));
             pointer-events: none;
-            /* filter: grayscale(1) brightness(0.8); */
+            z-index: 1
         }
 
-
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 6px;
+        #app {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            z-index: 2
         }
 
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background-color: #00bfff;
-            border-radius: 10px;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: #0f172a;
-        }
-
-        .left-panel-hidden {
-            transform: translateX(-100%);
-            opacity: 0;
-        }
-
-        .right-panel-hidden {
-            transform: translateX(100%);
-            opacity: 0;
-        }
-
-        #left-panel {
-            left: 1rem;
-        }
-
-        #right-panel {
-            right: 1rem;
-        }
-
-        #left-panel-toggle {
-            left: 1rem;
-        }
-
-        #right-panel-toggle {
-            right: 1rem;
-        }
-
-        @media (min-width: 1024px) {
-
-            /* Desktop default view (Panels open) - Map diperkecil dan ditengah */
-            #map-container {
-                left: 360px;
-                /* 340px panel + 20px margin/gap */
-                right: 360px;
-                /* 340px panel + 20px margin/gap */
-                width: auto;
-                /* Didefinisikan oleh left/right */
-                height: calc(100% - 60px);
-            }
-
-            #left-panel {
-                top: 5rem;
-                bottom: 1.5rem;
-                width: 340px;
-                height: auto;
-            }
-
-            #left-panel-toggle {
-                left: 340px;
-                transform: translateX(0);
-            }
-
-            #right-panel-toggle {
-                right: 340px;
-                transform: translateX(0);
-            }
-
-            .map-expand-left {
-                left: 1rem !important;
-            }
-
-            .map-expand-right {
-                right: 1rem !important;
-            }
-
-            #left-panel.left-panel-hidden+#left-panel-toggle {
-                left: 0.5rem;
-                transform: translateX(0);
-            }
-
-            #right-panel.right-panel-hidden+#right-panel-toggle {
-                right: 0.5rem;
-                transform: translateX(0);
-            }
-
-            #zoom-controls {
-                top: 70px;
-                right: 1.5rem;
-            }
-        }
-
-        @media (max-width: 1023px) {
-            .legend-panel {
-                display: flex !important;
-                position: fixed !important;
-                top: 50px !important;
-                bottom: auto !important;
-                left: 0 !important;
-                right: 0 !important;
-                transform: none !important;
-                width: 100% !important;
-                justify-content: space-around !important;
-                padding: 0.5rem 0 !important;
-                z-index: 45 !important;
-                backdrop-filter: blur(8px) !important;
-                border-bottom: 1px solid #00bfff20 !important;
-                pointer-events: auto !important;
-                height: 35px !important;
-                gap: 0 !important;
-            }
-
-            #left-panel {
-                left: 0 !important;
-                right: 0 !important;
-                top: auto !important;
-                bottom: 0 !important;
-                width: 100% !important;
-                height: 440px !important;
-                max-width: none !important;
-                border-radius: 1rem 1rem 0 0 !important;
-                border-left: none !important;
-                border-right: none !important;
-                transform: none !important;
-                padding-top: 0 !important;
-                padding-bottom: 0 !important;
-            }
-
-            #map-container {
-                top: -115px !important;
-                bottom: 280px !important;
-                height: calc(100% - 95px - 280px) !important;
-            }
-
-            #left-panel-toggle {
-                display: none !important;
-            }
-
-            #right-panel {
-                display: none !important;
-            }
-
-            #right-panel-toggle {
-                display: none !important;
-            }
-
-            #zoom-controls {
-                top: 105px;
-                right: 1rem;
-            }
-        }
-
-        .grid-background {
+        .topbar {
             position: absolute;
             top: 0;
             left: 0;
-            width: 100%;
+            right: 0;
+            height: 92px;
+            display: grid;
+            grid-template-columns: 340px 1fr 340px;
+            align-items: center;
+            padding: 14px 24px;
+            border-top: 5px solid var(--neon);
+            background: linear-gradient(to bottom, rgba(10, 10, 14, .88), rgba(10, 10, 14, .35));
+            backdrop-filter: blur(12px);
+            z-index: 50
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            user-select: none
+        }
+
+        .brand-badge {
+            background: radial-gradient(circle at 30% 30%, rgba(0, 180, 255, .95), rgba(0, 180, 255, .25));
+            box-shadow:
+                0 0 28px rgba(0, 180, 255, .55),
+                inset 0 0 18px rgba(0, 0, 0, .35);
+        }
+
+        .brand-badge::before {
+            content: "";
+            position: absolute;
+            inset: 10px;
+            border-radius: 10px;
+            border: 2px solid rgba(255, 255, 255, .18)
+        }
+
+        .brand-name {
+            font-family: "JetBrains Mono", monospace;
+            letter-spacing: .22em;
+            font-weight: 700;
+            font-size: 16px
+        }
+
+        .brand-sub {
+            font-size: 11px;
+            color: var(--muted2);
+            letter-spacing: .18em;
+            margin-top: 2px
+        }
+
+        .centerTitle {
+            text-align: center;
+            user-select: none
+        }
+
+        .centerTitle h1 {
+            margin: 0;
+            font-family: "JetBrains Mono", monospace;
+            font-size: 26px;
+            letter-spacing: .22em;
+            font-weight: 700
+        }
+
+        .centerTitle p {
+            margin: 6px 0 0 0;
+            font-family: "JetBrains Mono", monospace;
+            letter-spacing: .08em;
+            color: var(--neon);
+            font-weight: 600
+        }
+
+        .cta {
+            justify-self: end;
+            border: 1px solid rgba(0, 180, 255, .85);
+            background: linear-gradient(135deg,
+                    rgba(0, 180, 255, .18),
+                    rgba(0, 0, 0, .12));
+            box-shadow:
+                0 0 0 1px rgba(0, 180, 255, .18),
+                0 10px 30px rgba(0, 0, 0, .45);
+            padding: 10px 12px;
+            border-radius: 10px;
+            font-family: "JetBrains Mono", monospace;
+            text-transform: uppercase;
+            font-size: 12px;
+            line-height: 1.2;
+            letter-spacing: .08em;
+            color: #fff;
+            text-align: right;
+            user-select: none
+        }
+
+        .cta span {
+            display: inline-block;
+            margin-top: 6px;
+            color: var(--neon);
+            font-weight: 700
+        }
+
+        .shell {
+            position: absolute;
+            top: 92px;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            display: grid;
+            grid-template-columns: 340px 1fr 340px;
+            gap: 18px;
+            padding: 18px 18px 18px 18px
+        }
+
+        .panel {
+            background: linear-gradient(to bottom, rgba(17, 17, 24, .92), rgba(17, 17, 24, .55));
+            border: 1px solid rgba(255, 255, 255, .06);
+            border-radius: 16px;
+            box-shadow: 0 18px 40px rgba(0, 0, 0, .45);
+            backdrop-filter: blur(12px);
+            overflow: hidden;
+            position: relative
+        }
+
+        .panel::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(900px 500px at 20% 0%, rgba(0, 180, 255, .22), transparent 60%),
+                radial-gradient(700px 400px at 80% 0%, rgba(0, 229, 255, .18), transparent 60%);
+            pointer-events: none
+        }
+
+        .panelInner {
+            position: relative;
             height: 100%;
-            z-index: 5;
-            background-image: linear-gradient(to right, theme('colors.gridline') 1px, transparent 1px),
-                linear-gradient(to bottom, theme('colors.gridline') 1px, transparent 1px);
-            background-size: 40px 40px;
-            opacity: 0.15;
-            pointer-events: none;
+            padding: 14px 14px 12px 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px
+        }
+
+        .panelTitle {
+            font-family: "JetBrains Mono", monospace;
+            font-size: 12px;
+            letter-spacing: .14em;
+            color: rgba(255, 255, 255, .88);
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            justify-content: space-between
+        }
+
+        .panelTitle small {
+            color: var(--muted2);
+            letter-spacing: .10em;
+            font-weight: 500
+        }
+
+        .divider {
+            height: 1px;
+            background: linear-gradient(to right, transparent, rgba(255, 255, 255, .10), transparent)
+        }
+
+        .canvasWrap {
+            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, .06);
+            background: linear-gradient(135deg, rgba(255, 30, 109, .10), rgba(0, 0, 0, .12));
+            padding: 10px
+        }
+
+        #miniChart {
+            width: 100%;
+            height: 130px;
+            display: block
+        }
+
+        .attackHeader {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px
+        }
+
+        .attackHeader .rate {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-family: "JetBrains Mono", monospace;
+            font-size: 12px;
+            color: var(--muted)
+        }
+
+        .pill {
+            padding: 6px 10px;
+            border-radius: 999px;
+            border: 1px solid rgba(255, 255, 255, .08);
+            background: rgba(0, 0, 0, .12);
+            color: rgba(255, 255, 255, .85)
+        }
+
+        .stepper {
+            display: flex;
+            align-items: center;
+            gap: 8px
+        }
+
+        .stepper button {
+            width: 28px;
+            height: 28px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, .08);
+            background: rgba(0, 0, 0, .12);
+            color: #fff;
+            cursor: pointer;
+            font-weight: 700;
+            line-height: 1
+        }
+
+        .stepper button:active {
+            transform: scale(.97)
+        }
+
+        #attackdiv {
+            flex: 1;
+            min-height: 0;
+            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, .06);
+            background: linear-gradient(135deg, rgba(0, 0, 0, .22), rgba(0, 0, 0, .06));
+            padding: 10px;
+            overflow: auto;
+            font-family: "JetBrains Mono", monospace;
+            font-size: 12px;
+            line-height: 1.6
+        }
+
+        #attackdiv::-webkit-scrollbar {
+            width: 6px
+        }
+
+        #attackdiv::-webkit-scrollbar-track {
+            background: rgba(0, 180, 255, .85);
+            border-radius: 999px
+        }
+
+        #attackdiv::-webkit-scrollbar-thumb {
+            background: rgba(0, 229, 255, .95);
+            border-radius: 999px
+        }
+
+        #attackdiv::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 229, 255, .95);
+        }
+
+        .attack-source {
+            color: var(--neon2);
+            font-weight: 600
+        }
+
+        .attack-target {
+            color: var(--green);
+            font-weight: 600
+        }
+
+        .attack-type {
+            color: var(--cyan);
+            font-weight: 500
+        }
+
+        .attack-ip {
+            color: rgba(255, 255, 255, .72)
+        }
+
+        .list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px
+        }
+
+        .item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 10px 10px;
+            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, .06);
+            background: rgba(0, 0, 0, .12)
+        }
+
+        .item .left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 0
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, .25);
+            box-shadow: 0 0 0 6px rgba(255, 255, 255, .06)
+        }
+
+        .flag {
+            width: 26px;
+            height: 18px;
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, .10);
+            background: rgba(255, 255, 255, .06);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px
+        }
+
+        .name {
+            font-size: 13px;
+            color: rgba(255, 255, 255, .90);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis
+        }
+
+        .meta {
+            font-family: "JetBrains Mono", monospace;
+            font-size: 12px;
+            color: var(--muted);
+            white-space: nowrap
+        }
+
+        .mapWrap {
+            position: relative;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, .06);
+            overflow: hidden;
+            box-shadow: 0 18px 40px rgba(0, 0, 0, .45);
+            background: linear-gradient(180deg, rgba(0, 0, 0, .25), rgba(0, 0, 0, .10));
+            min-height: 0;
+        }
+
+        #container1 {
+            position: absolute;
+            inset: 0
+        }
+
+        .legend {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            bottom: 18px;
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            padding: 10px 12px;
+            border-radius: 999px;
+            border: 1px solid rgba(255, 255, 255, .08);
+            background: rgba(10, 10, 14, .55);
+            backdrop-filter: blur(12px);
+            z-index: 10
+        }
+
+        .leg {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: "JetBrains Mono", monospace;
+            font-size: 12px;
+            color: rgba(255, 255, 255, .85)
+        }
+
+        .leg i {
+            width: 12px;
+            height: 12px;
+            border-radius: 999px;
+            display: inline-block;
+            box-shadow: 0 0 0 6px rgba(255, 255, 255, .06)
+        }
+
+        .leg .m {
+            background: #00b4ff;
+        }
+
+        .leg .p {
+            background: #38d4ff;
+        }
+
+        .leg .e {
+            background: #22d3ee;
+        }
+
+        .hoverinfo {
+            color: #fff !important;
+            background: rgba(16, 16, 24, .92) !important;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, .10) !important;
+            border-radius: 10px !important;
+            padding: 10px 12px !important;
+            font-family: Inter, sans-serif !important;
+            font-size: 13px !important;
+            box-shadow: 0 18px 40px rgba(0, 0, 0, .45) !important
+        }
+
+        .datamaps-subunit {
+            stroke: rgba(255, 255, 255, .12) !important;
+            stroke-width: .7px !important;
+            stroke-dasharray: 2, 4 !important;
+            fill: rgba(255, 255, 255, .06) !important
+        }
+
+        @keyframes impact-pulse {
+            0% {
+                r: 0;
+                opacity: 1
+            }
+
+            55% {
+                opacity: .55
+            }
+
+            100% {
+                r: 26;
+                opacity: 0
+            }
+        }
+
+        @keyframes impact-core {
+            0% {
+                r: 0;
+                opacity: 1
+            }
+
+            60% {
+                r: 9;
+                opacity: 1
+            }
+
+            100% {
+                r: 13;
+                opacity: 0
+            }
+        }
+
+        .impact-ripple {
+            animation: impact-pulse 2.05s ease-out forwards;
+            stroke-width: 2;
+            fill: none;
+            pointer-events: none
+        }
+
+        .impact-core {
+            animation: impact-core 1.55s ease-out forwards;
+            pointer-events: none
+        }
+
+        .impact-glow {
+            filter: url(#glow)
+        }
+
+        @media (max-width:1100px) {
+
+            body {
+                overflow-y: auto;
+            }
+
+            .topbar {
+                grid-template-columns: 1fr;
+                height: auto;
+            }
+
+            .brand,
+            .cta {
+                display: none;
+            }
+
+            .shell {
+                grid-template-columns: 1fr;
+                gap: 12px;
+                padding: 12px;
+            }
+
+            .panel {
+                display: block;
+            }
+
+            .panel.left,
+            .panel.right {
+                display: none;
+            }
+
+            .panel.mobile-attacks {
+                display: block;
+            }
+
+            .mapWrap {
+                height: 62vh;
+            }
+
+            #container1 {
+                transform: scale(1.35) translateY(-6%);
+                transform-origin: center center;
+            }
+        }
+
+
+        .country-panel {
+            position: absolute;
+            top: 140px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 320px;
+            background: linear-gradient(to bottom, #0b0b10, #050509);
+            border: 1px solid rgba(255, 255, 255, .08);
+            border-left: 6px solid #ff1e6d;
+            border-radius: 14px;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, .7);
+            color: #fff;
+            z-index: 999
+        }
+
+        .country-panel.hidden {
+            display: none
+        }
+
+        .cp-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px
+        }
+
+        .cp-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 16px;
+            font-weight: 600
+        }
+
+        #cp-close {
+            background: none;
+            border: none;
+            color: #aaa;
+            font-size: 18px;
+            cursor: pointer
+        }
+
+        .cp-section {
+            padding: 10px 14px
+        }
+
+        .cp-label {
+            font-family: "JetBrains Mono", monospace;
+            font-size: 11px;
+            letter-spacing: .15em
+        }
+
+        .cp-sub {
+            font-size: 11px;
+            color: #9ca3af;
+            margin-top: 2px
+        }
+
+        .cp-divider {
+            height: 1px;
+            background: linear-gradient(to right, transparent, #222, transparent);
+            margin: 6px 0
+        }
+
+        .cp-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            margin-top: 10px
+        }
+
+        .spark {
+            margin-top: 4px
+        }
+
+        .country-panel {
+            opacity: 0;
+            transform: translateX(-50%) translateY(12px) scale(.96);
+            transition: opacity .35s ease, transform .45s cubic-bezier(.16, 1, .3, 1);
+        }
+
+        .country-panel.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0) scale(1);
+        }
+
+        .cp-loading {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(to bottom, #0b0b10, #050509);
+            border-radius: 14px;
+            z-index: 2
+        }
+
+        .spinner {
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            border: 3px solid rgba(255, 255, 255, .15);
+            border-top-color: #ff1e6d;
+            animation: spin 1s linear infinite
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg)
+            }
+        }
+
+        .skeleton {
+            position: relative;
+            overflow: hidden;
+            background: rgba(255, 255, 255, .08);
+            border-radius: 6px
+        }
+
+        .skeleton::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(110deg, transparent 30%, rgba(255, 255, 255, .18) 50%, transparent 70%);
+            animation: shimmer 1.4s infinite
+        }
+
+        @keyframes shimmer {
+            from {
+                transform: translateX(-100%)
+            }
+
+            to {
+                transform: translateX(100%)
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn .5s ease forwards
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(6px)
+            }
+
+            to {
+                opacity: 1;
+                transform: none
+            }
+        }
+
+        @media (max-width: 768px) {
+
+            body {
+                overflow-y: auto;
+            }
+
+            .topbar {
+                grid-template-columns: 1fr;
+                height: auto;
+                padding: 12px 14px;
+                gap: 8px;
+            }
+
+            .brand,
+            .cta {
+                display: none;
+            }
+
+            .centerTitle h1 {
+                font-size: 18px;
+                letter-spacing: .18em;
+            }
+
+            .centerTitle p {
+                font-size: 12px;
+            }
+
+            .shell {
+                grid-template-columns: 1fr;
+                padding: 12px;
+                gap: 12px;
+            }
+
+            .panel {
+                display: none;
+            }
+
+            .mapWrap {
+                height: 65vh;
+                border-radius: 18px;
+                overflow: hidden;
+            }
+
+            #container1 {
+                transform: scale(1.35) translateY(-6%);
+                transform-origin: center center;
+            }
+
+            .legend {
+                bottom: 10px;
+                gap: 12px;
+                font-size: 11px;
+            }
+
+            #attackdiv {
+                font-size: 11px;
+                padding: 10px;
+                height: 30vh;
+            }
+
+            .country-panel {
+                top: 110px;
+                width: calc(100vw - 28px);
+                left: 50%;
+                transform: translateX(-50%);
+            }
+        }
+
+        .map-zoom {
+            position: absolute;
+            right: 14px;
+            top: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            z-index: 20
+        }
+
+        .map-zoom button {
+            width: 38px;
+            height: 38px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, .15);
+            background: rgba(10, 10, 20, .65);
+            color: #00b4ff;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 0 1px rgba(0, 180, 255, .12),
+                0 12px 30px rgba(0, 0, 0, .45)
+        }
+
+        .map-zoom button:active {
+            transform: scale(.96)
+        }
+
+        .mobile-attacks {
+            margin-top: 12px;
+        }
+
+        #attackdiv-mobile {
+            max-height: 38vh;
+            overflow-y: auto;
+            font-family: "JetBrains Mono", monospace;
+            font-size: 12px;
+            line-height: 1.6;
+            padding: 10px;
+            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, .06);
+            background: linear-gradient(135deg, rgba(0, 0, 0, .22), rgba(0, 0, 0, .06));
         }
     </style>
+
+
+    <script src="https://d3js.org/d3.v3.min.js"></script>
+    <script src="https://d3js.org/topojson.v1.min.js"></script>
+    <script src="https://d3js.org/d3.geo.projection.v0.min.js"></script>
+    <script src="https://datamaps.github.io/scripts/datamaps.world.min.js?v=1"></script>
 </head>
 
-<body class="relative">
-
-    <div class="grid-background"></div>
-    <div id="map-container" style="transform: translate(0px, 0px) scale(1);">
-        <iframe id="raven-iframe" src="{{ asset('raven/src/raven.html') }}"></iframe>
-        <div id="map-interact-layer" class="absolute top-0 left-0 w-full h-full"></div>
-    </div>
-    <div
-        class="absolute top-0 left-0 right-0 z-40 pointer-events-none
-           flex flex-col items-center justify-center
-           h-[52px] sm:h-[60px]
-           bg-slate-950/30 backdrop-blur-md
-           border-b border-white/5">
-
-        <h1
-            class="text-[11px] sm:text-xl
-               font-extrabold text-slate-100
-               tracking-[0.25em] sm:tracking-[0.4em]
-               drop-shadow-[0_0_8px_rgba(255,255,255,0.15)]
-               text-center px-4 whitespace-nowrap">
-            LIVE CYBER THREAT MAP
-        </h1>
-
-        <div
-            class="hidden sm:block mt-1
-               text-xs text-cyan-400
-               tracking-widest font-medium
-               drop-shadow-[0_0_10px_rgba(0,191,255,0.8)]">
-            REAL-TIME GLOBAL ATTACK ACTIVITY
-        </div>
-
-        <div
-            class="block sm:hidden
-               text-[9px] text-cyan-400
-               tracking-[0.18em]
-               drop-shadow-[0_0_8px_rgba(0,191,255,0.7)]">
-            REAL-TIME ATTACKS
-        </div>
-    </div>
-
-
-    <div id="left-panel"
-        class="absolute top-20 bottom-6 w-[340px] z-40 pointer-events-none transition-all duration-300">
-        <div
-            class="h-full rounded-2xl bg-slate-950/60 backdrop-blur-xl border border-cyberblue/30 shadow-3xl flex flex-col p-0 overflow-hidden drop-shadow-[0_0_15px_rgba(0,191,255,0.4)]">
-
-            <div class="p-4 flex-shrink-0 border-b border-white/5">
-                <div class="text-[10px] tracking-widest text-slate-300 mb-2 uppercase font-mono">RECENT DAILY ATTACKS
-                </div>
-                <canvas id="attackChart" height="90"></canvas>
-            </div>
-
-            <div class="px-4 pt-3 pb-3 flex-shrink-0">
-                <div class="text-sm tracking-widest text-cyberblue drop-shadow-[0_0_6px_rgba(0,191,255,0.7)] font-bold">
-                    ATTACK LOG STREAM
+<body>
+    <div id="app">
+        <div class="topbar">
+            <div class="brand">
+                <div class="brand-badge"></div>
+                <div>
+                    <div class="brand-name">VIROLOGI</div>
+                    <div class="brand-sub">SECURITY INTELLIGENCE</div>
                 </div>
             </div>
 
-            <div id="attack-list"
-                class="flex-1 overflow-y-auto px-4 pb-4 space-y-2 custom-scrollbar pointer-events-auto">
+            <div class="centerTitle">
+                <h1>LIVE CYBER THREAT MAP</h1>
+                <p><span id="attackCounter">0</span> ATTACKS ON THIS DAY</p>
+            </div>
+
+            <div class="cta">
+                DON'T WAIT TO BE ATTACKED<br />
+                PREVENTION STARTS <span>NOW →</span>
             </div>
         </div>
-    </div>
-    <button id="left-panel-toggle" onclick="toggleLeftPanel()" title="Sembunyikan Panel Kiri"
-        class="absolute top-20 p-2 rounded-full bg-cyberblue/80 hover:bg-cyberblue z-50 pointer-events-auto shadow-lg transition-all duration-300 drop-shadow-[0_0_8px_rgba(0,191,255,0.8)]">
-        <svg id="left-icon" class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-        </svg>
-    </button>
 
-    <div id="right-panel"
-        class="absolute top-20 bottom-6 w-[340px] z-40 pointer-events-none transition-all duration-300">
-        <div
-            class="h-full rounded-2xl bg-slate-950/60 backdrop-blur-xl border border-cyberblue/30 shadow-3xl flex flex-col p-0 overflow-hidden drop-shadow-[0_0_15px_rgba(0,191,255,0.4)]">
-
-            <div class="p-4 flex-shrink-0 border-b border-white/5">
-                <div class="text-[10px] tracking-widest text-slate-300 mb-3 uppercase font-mono">GLOBAL METRICS</div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="text-center">
-                        <div id="total-attacks"
-                            class="text-3xl font-extrabold text-cyberblue drop-shadow-[0_0_8px_rgba(0,191,255,.5)]">0
-                        </div>
-                        <div class="text-[9px] text-slate-400 uppercase tracking-wider mt-1">Total Attacks Today</div>
+        <div class="shell">
+            <aside class="panel">
+                <div class="panelInner">
+                    <div class="panelTitle">RECENT DAILY ATTACKS <small>Last 14 days</small></div>
+                    <div class="divider"></div>
+                    <div class="canvasWrap">
+                        <canvas id="miniChart" width="600" height="240"></canvas>
                     </div>
-                    <div class="text-center">
-                        <div id="top-country"
-                            class="text-3xl font-extrabold text-exploit drop-shadow-[0_0_8px_rgba(34,211,238,.5)]">N/A
+
+                    <div class="attackHeader">
+                        <div class="panelTitle" style="margin:0">ATTACKS</div>
+                        <div class="rate">
+                            <span class="pill">Current rate</span>
+                            <span id="rateValue" class="pill">1.2/s</span>
+                            <span class="stepper">
+                                <button id="rateMinus">−</button>
+                                <button id="ratePlus">+</button>
+                            </span>
                         </div>
-                        <div class="text-[9px] text-slate-400 uppercase tracking-wider mt-1">Most Targeted Country</div>
                     </div>
+                    <div class="map-zoom">
+                        <button id="zoomIn">＋</button>
+                        <button id="zoomOut">－</button>
+                        <button id="zoomReset">⟳</button>
+                    </div>
+                    <div id="attackdiv"></div>
+                </div>
+            </aside>
+
+            <main class="mapWrap">
+                <div id="container1"></div>
+                <div class="legend">
+                    <div class="leg"><i class="m"></i> Malware</div>
+                    <div class="leg"><i class="p"></i> Phishing</div>
+                    <div class="leg"><i class="e"></i> Exploit</div>
+                </div>
+            </main>
+
+            <div class="panel mobile-attacks">
+                <div class="panelInner">
+                    <div class="panelTitle">
+                        <span>Recent Attacks</span>
+                        <small>Live</small>
+                    </div>
+
+                    <div class="divider"></div>
+
+                    <div id="attackdiv-mobile"></div>
                 </div>
             </div>
 
-            <div class="px-4 pt-3 pb-3 flex-shrink-0">
-                <div class="text-sm tracking-widest text-cyberblue drop-shadow-[0_0_6px_rgba(0,191,255,.7)] font-bold">
-                    TOP ATTACK SOURCES
+
+            <aside class="panel">
+                <div class="panelInner">
+                    <div class="panelTitle">TOP TARGETED COUNTRIES <small>Last day</small></div>
+                    <div class="divider"></div>
+                    <div class="list" id="topCountries"></div>
+
+                    <div class="panelTitle" style="margin-top:10px">TOP TARGETED INDUSTRIES <small>Last day</small>
+                    </div>
+                    <div class="divider"></div>
+                    <div class="list" id="topIndustries"></div>
+
+                    <div class="panelTitle" style="margin-top:10px">TOP MALWARE TYPES <small>Last day</small></div>
+                    <div class="divider"></div>
+                    <div class="list" id="topMalware"></div>
                 </div>
-            </div>
-
-            <div id="top-sources-list"
-                class="flex-1 overflow-y-auto px-4 pb-4 space-y-2 custom-scrollbar pointer-events-auto">
-            </div>
+            </aside>
         </div>
     </div>
-    <button id="right-panel-toggle" onclick="toggleRightPanel()" title="Sembunyikan Panel Kanan"
-        class="absolute top-20 p-2 rounded-full bg-cyberblue/80 hover:bg-cyberblue z-50 pointer-events-auto shadow-lg transition-all duration-300 drop-shadow-[0_0_8px_rgba(0,191,255,0.8)]">
-        <svg id="right-icon" class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-        </svg>
-    </button>
 
-    <div id="zoom-controls" class="absolute z-50 flex flex-col space-y-2 pointer-events-auto">
-        <button onclick="zoomIn()" title="Perbesar (Zoom In)"
-            class="p-2 rounded-full bg-cyberblue/80 hover:bg-cyberblue text-white shadow-lg drop-shadow-[0_0_8px_rgba(0,191,255,0.8)]">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-            </svg>
-        </button>
-        <button onclick="zoomOut()" title="Perkecil (Zoom Out)"
-            class="p-2 rounded-full bg-cyberblue/80 hover:bg-cyberblue text-white shadow-lg drop-shadow-[0_0_8px_rgba(0,191,255,0.8)]">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path>
-            </svg>
-        </button>
-    </div>
+    <div id="countryPanel" class="country-panel hidden">
+        <div class="cp-loading" id="cpLoading">
+            <div class="spinner"></div>
+        </div>
 
-    <div
-        class="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-8 z-40 text-xs text-slate-300 pointer-events-none legend-panel">
-        <div class="flex items-center gap-2">
-            <span
-                class="w-3 h-3 rounded-full bg-malware shadow-[0_0_12px_rgba(239,68,68,1)] ring-2 ring-malware/50"></span>
-            <span class="font-medium">Malware</span>
+        <div class="cp-header fade-in">
+            <div class="cp-title">
+                <span id="cp-flag">🏳️</span>
+                <span id="cp-name"></span>
+            </div>
+            <button id="cp-close">✕</button>
         </div>
-        <div class="flex items-center gap-2">
-            <span
-                class="w-3 h-3 rounded-full bg-phishing shadow-[0_0_12px_rgba(168,85,247,1)] ring-2 ring-phishing/50"></span>
-            <span class="font-medium">Phishing</span>
+
+        <div class="cp-section fade-in">
+            <div class="cp-label">ATTACK TREND</div>
+            <div class="cp-sub">Last 30 days</div>
+            <canvas id="cpTrend" width="260" height="90"></canvas>
         </div>
-        <div class="flex items-center gap-2">
-            <span
-                class="w-3 h-3 rounded-full bg-exploit shadow-[0_0_12px_rgba(34,211,238,1)] ring-2 ring-exploit/50"></span>
-            <span class="font-medium">Exploit</span>
+
+        <div class="cp-divider"></div>
+
+        <div class="cp-section fade-in">
+            <div class="cp-label">MALWARE TYPE TRENDS</div>
+
+            <div class="cp-row"><span>Botnet</span><span id="m1">6.2%</span></div>
+            <canvas class="spark" width="260" height="22"></canvas>
+
+            <div class="cp-row"><span>Infostealer</span><span id="m2">3.0%</span></div>
+            <canvas class="spark" width="260" height="22"></canvas>
+
+            <div class="cp-row"><span>Ransomware</span><span id="m3">2.7%</span></div>
+            <canvas class="spark" width="260" height="22"></canvas>
         </div>
     </div>
 
     <script>
-        function togglePanel(panelId) {
-            const panel = document.getElementById(panelId);
-            const isLeft = panelId.includes('left');
-            const hiddenClass = isLeft ? 'left-panel-hidden' : 'right-panel-hidden';
-            const iconId = isLeft ? 'left-icon' : 'right-icon';
-            const icon = document.getElementById(iconId);
-            const toggleButton = document.getElementById(panelId + '-toggle');
-            const mapContainer = document.getElementById('map-container');
+        var attackCount = 9237384;
+        var baseRate = 1.2;
+        var rateMin = .4;
+        var rateMax = 6.0;
 
-            if (panel.classList.contains(hiddenClass)) {
-                panel.classList.remove(hiddenClass);
-                toggleButton.title = 'Sembunyikan Panel';
-                if (window.innerWidth >= 1024) {
-                    if (isLeft) {
-                        mapContainer.classList.remove('map-expand-left');
-                    } else {
-                        mapContainer.classList.remove('map-expand-right');
-                    }
-                }
-
-                if (isLeft) {
-                    icon.innerHTML =
-                        '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>';
-                } else {
-                    icon.innerHTML =
-                        '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>';
-                }
-            } else {
-                // Sembunyikan Panel
-                panel.classList.add(hiddenClass);
-                toggleButton.title = 'Tampilkan Panel';
-
-                // Perluas map ke sisi yang panelnya disembunyikan
-                if (window.innerWidth >= 1024) {
-                    if (isLeft) {
-                        mapContainer.classList.add('map-expand-left');
-                    } else {
-                        mapContainer.classList.add('map-expand-right');
-                    }
-                }
-
-                if (isLeft) {
-                    icon.innerHTML =
-                        '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>';
-                } else {
-                    icon.innerHTML =
-                        '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>';
-                }
+        function formatNumber(n) {
+            var s = Math.floor(n).toString();
+            var out = "";
+            for (var i = 0; i < s.length; i++) {
+                var idx = s.length - 1 - i;
+                out = s[idx] + out;
+                if (i % 3 === 2 && idx !== 0) out = "," + out
             }
+            return out
         }
 
-        function toggleLeftPanel() {
-            if (window.innerWidth >= 1024) {
-                togglePanel('left-panel');
-            }
+        function setCounter() {
+            document.getElementById("attackCounter").textContent = formatNumber(attackCount)
         }
 
-        function toggleRightPanel() {
-            if (window.innerWidth >= 1024) {
-                togglePanel('right-panel');
-            }
+        setCounter();
+
+        function setRateLabel() {
+            document.getElementById("rateValue").textContent = baseRate.toFixed(1) + "/s"
         }
 
-        // === Fungsi Pan dan Zoom Peta ===
-        let scale = 1;
-        let translateX = 0;
-        let translateY = 0;
-        let isDragging = false;
-        let startX = 0;
-        let startY = 0;
-        let lastPinchDist = 0;
+        setRateLabel();
 
-        const mapContainer = document.getElementById('map-container');
-        const mapInteractLayer = document.getElementById('map-interact-layer');
-        const MIN_SCALE = 1.0;
-        const MAX_SCALE = 4.0;
-
-        function updateTransform() {
-            // Terapkan translasi dan skala pada map container
-            mapContainer.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
-        }
-
-        function restrictTranslation(newTranslateX, newTranslateY) {
-            // Dapatkan dimensi kontainer peta (termasuk penyesuaian dari CSS media query)
-            const rect = mapContainer.getBoundingClientRect();
-
-            // Hitung batas maksimum terjemahan
-            // Ini mencegah peta digeser terlalu jauh sehingga area kosong terlihat
-            const contentWidth = rect.width;
-            const contentHeight = rect.height;
-
-            // maxPan adalah seberapa jauh konten yang di-zoom melebihi batas (dibagi 2)
-            const maxPanX = Math.max(0, (contentWidth * scale - contentWidth) / 2);
-            const maxPanY = Math.max(0, (contentHeight * scale - contentHeight) / 2);
-
-            translateX = Math.max(-maxPanX, Math.min(maxPanX, newTranslateX));
-            translateY = Math.max(-maxPanY, Math.min(maxPanY, newTranslateY));
-        }
-
-        function zoom(direction, center) {
-            const zoomSpeed = 0.2;
-            const oldScale = scale;
-            const scaleFactor = 1 + (direction * zoomSpeed);
-
-            scale *= scaleFactor;
-            scale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, scale));
-
-            if (scale !== oldScale) {
-                const newScaleFactor = scale / oldScale;
-
-                // Kalkulasi translasi agar zoom berpusat pada titik 'center'
-                let newTranslateX = center.x - (center.x - translateX) * newScaleFactor;
-                let newTranslateY = center.y - (center.y - translateY) * newScaleFactor;
-
-                restrictTranslation(newTranslateX, newTranslateY);
-                updateTransform();
-            }
-        }
-
-        function zoomIn() {
-            // Zoom In terpusat di tengah layar
-            const rect = mapInteractLayer.getBoundingClientRect();
-            const center = {
-                x: rect.width / 2,
-                y: rect.height / 2
-            };
-            zoom(1, center);
-        }
-
-        function zoomOut() {
-            // Zoom Out terpusat di tengah layar
-            const rect = mapInteractLayer.getBoundingClientRect();
-            const center = {
-                x: rect.width / 2,
-                y: rect.height / 2
-            };
-            zoom(-1, center);
-        }
-
-        // --- Event Listener Mouse ---
-        mapInteractLayer.addEventListener('wheel', (e) => {
-            e.preventDefault();
-            const zoomSpeed = 0.1;
-            const oldScale = scale;
-
-            // Hitung skala baru berdasarkan arah scroll
-            scale += e.deltaY * -0.01 * zoomSpeed * scale;
-            scale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, scale));
-
-            if (scale !== oldScale) {
-                const rect = mapInteractLayer.getBoundingClientRect();
-
-                // Koordinat mouse relatif terhadap lapisan interaksi
-                const mouseX = e.clientX - rect.left;
-                const mouseY = e.clientY - rect.top;
-
-                const scaleFactor = scale / oldScale;
-
-                // Sesuaikan translasi agar titik di bawah kursor tetap di tempatnya
-                let newTranslateX = mouseX - (mouseX - translateX) * scaleFactor;
-                let newTranslateY = mouseY - (mouseY - translateY) * scaleFactor;
-
-                restrictTranslation(newTranslateX, newTranslateY);
-                updateTransform();
-            }
-        }, {
-            passive: false
+        document.getElementById("rateMinus").addEventListener("click", function() {
+            baseRate = Math.max(rateMin, baseRate - 0.4);
+            setRateLabel();
+            rebuildTimer();
         });
 
-        mapInteractLayer.addEventListener('mousedown', (e) => {
-            // Hanya geser dengan tombol kiri mouse (primary button)
-            if (e.buttons === 1) {
-                isDragging = true;
-                // Simpan posisi awal mouse relatif terhadap translasi peta saat ini
-                startX = e.clientX - translateX;
-                startY = e.clientY - translateY;
-                mapInteractLayer.style.cursor = 'grabbing';
+        document.getElementById("ratePlus").addEventListener("click", function() {
+            baseRate = Math.min(rateMax, baseRate + 0.4);
+            setRateLabel();
+            rebuildTimer();
+        });
+
+        var chartData = [];
+
+        function seedChart() {
+            chartData = [];
+            var v = 12.5;
+            for (var i = 0; i < 14; i++) {
+                v = Math.max(5, Math.min(20, v + (Math.random() * 4 - 2)));
+                chartData.push(v)
             }
-        });
-
-        document.addEventListener('mousemove', (e) => {
-            if (!isDragging || e.touches) return;
-
-            const newTranslateX = e.clientX - startX;
-            const newTranslateY = e.clientY - startY;
-
-            restrictTranslation(newTranslateX, newTranslateY);
-            updateTransform();
-        });
-
-        document.addEventListener('mouseup', () => {
-            if (isDragging) {
-                isDragging = false;
-                mapInteractLayer.style.cursor = 'grab';
-            }
-        });
-
-        // --- Event Listener Touch ---
-        function getDistance(t1, t2) {
-            const dx = t1.clientX - t2.clientX;
-            const dy = t1.clientY - t2.clientY;
-            return Math.sqrt(dx * dx + dy * dy);
         }
+        seedChart();
 
-        function getCenter(t1, t2) {
-            return {
-                x: (t1.clientX + t2.clientX) / 2,
-                y: (t1.clientY + t2.clientY) / 2
-            };
-        }
+        function drawMiniChart() {
+            var c = document.getElementById("miniChart");
+            var ctx = c.getContext("2d");
+            var w = c.width,
+                h = c.height;
+            ctx.clearRect(0, 0, w, h);
 
-        mapInteractLayer.addEventListener('touchstart', (e) => {
-            if (e.touches.length === 1) { // Satu jari untuk Pan
-                isDragging = true;
-                startX = e.touches[0].clientX - translateX;
-                startY = e.touches[0].clientY - translateY;
-            } else if (e.touches.length === 2) { // Dua jari untuk Pinch Zoom
-                isDragging = false;
-                lastPinchDist = getDistance(e.touches[0], e.touches[1]);
+            ctx.globalAlpha = 1;
+            ctx.fillStyle = "rgba(255,255,255,.03)";
+            ctx.fillRect(0, 0, w, h);
+
+            ctx.strokeStyle = "rgba(255,255,255,.08)";
+            ctx.lineWidth = 1;
+            for (var gx = 0; gx <= 6; gx++) {
+                var x = Math.floor(gx * w / 6);
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, h);
+                ctx.stroke();
             }
-        }, {
-            passive: false
-        });
-
-        mapInteractLayer.addEventListener('touchmove', (e) => {
-            e.preventDefault();
-            const rect = mapInteractLayer.getBoundingClientRect();
-
-            if (e.touches.length === 1 && isDragging) { // Pan
-                const newTranslateX = e.touches[0].clientX - startX;
-                const newTranslateY = e.touches[0].clientY - startY;
-
-                restrictTranslation(newTranslateX, newTranslateY);
-                updateTransform();
-            } else if (e.touches.length === 2) { // Pinch Zoom
-                const newPinchDist = getDistance(e.touches[0], e.touches[1]);
-                const centerTouch = getCenter(e.touches[0], e.touches[1]);
-
-                if (lastPinchDist === 0) {
-                    lastPinchDist = newPinchDist;
-                    return;
-                }
-
-                // Kalkulasi perubahan skala
-                const deltaScale = (newPinchDist - lastPinchDist) / 500;
-                const oldScale = scale;
-
-                scale += deltaScale;
-                scale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, scale));
-                lastPinchDist = newPinchDist;
-
-                if (scale !== oldScale) {
-                    const scaleFactor = scale / oldScale;
-
-                    // Hitung titik tengah sentuhan relatif terhadap lapisan interaksi
-                    const mouseX = centerTouch.x - rect.left;
-                    const mouseY = centerTouch.y - rect.top;
-
-                    // Sesuaikan translasi agar zoom berpusat pada titik tengah sentuhan
-                    let newTranslateX = mouseX - (mouseX - translateX) * scaleFactor;
-                    let newTranslateY = mouseY - (mouseY - translateY) * scaleFactor;
-
-                    restrictTranslation(newTranslateX, newTranslateY);
-                }
-
-                updateTransform();
+            for (var gy = 0; gy <= 4; gy++) {
+                var y = Math.floor(gy * h / 4);
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(w, y);
+                ctx.stroke();
             }
-        }, {
-            passive: false
-        });
 
-        mapInteractLayer.addEventListener('touchend', () => {
-            isDragging = false;
-            lastPinchDist = 0;
-        });
+            var max = 0;
+            for (var i = 0; i < chartData.length; i++) max = Math.max(max, chartData[i]);
+            max = Math.max(max, 22);
 
-        // === Simulasi Data dan Chart ===
-        const chart = document.getElementById('attackChart')
-        const ctx = chart.getContext('2d')
-        let chartData = Array(40).fill(10)
+            var pad = 14;
+            var innerW = w - pad * 2;
+            var innerH = h - pad * 2;
 
-        function drawChart() {
-            ctx.clearRect(0, 0, chart.width, chart.height)
-            const w = chart.width
-            const h = chart.height
-            const max = Math.max(...chartData)
+            ctx.beginPath();
+            for (var i = 0; i < chartData.length; i++) {
+                var x = pad + (i * (innerW / (chartData.length - 1)));
+                var y = pad + innerH - (chartData[i] / max) * innerH;
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            }
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = "rgba(255,30,109,.95)";
+            ctx.shadowColor = "rgba(255,30,109,.35)";
+            ctx.shadowBlur = 14;
+            ctx.stroke();
+            ctx.shadowBlur = 0;
 
-            ctx.beginPath()
-            chartData.forEach((v, i) => {
-                const x = (i / (chartData.length - 1)) * w
-                const y = h - (v / (max || 1)) * h
-                i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y)
-            })
+            ctx.lineTo(pad + innerW, pad + innerH);
+            ctx.lineTo(pad, pad + innerH);
+            ctx.closePath();
+            var grad = ctx.createLinearGradient(0, pad, 0, pad + innerH);
+            grad.addColorStop(0, "rgba(255,30,109,.35)");
+            grad.addColorStop(1, "rgba(255,30,109,0)");
+            ctx.fillStyle = grad;
+            ctx.fill();
 
-            ctx.strokeStyle = '#00bfff'
-            ctx.lineWidth = 2.5
-            ctx.shadowColor = '#00bfff'
-            ctx.shadowBlur = 15
-            ctx.stroke()
-
-            ctx.lineTo(w, h)
-            ctx.lineTo(0, h)
-            ctx.closePath()
-
-            const g = ctx.createLinearGradient(0, 0, 0, h)
-            g.addColorStop(0, 'rgba(0,191,255,.5)')
-            g.addColorStop(1, 'rgba(0,191,255,0)')
-            ctx.fillStyle = g
-            ctx.fill()
+            ctx.fillStyle = "rgba(255,255,255,.75)";
+            ctx.font = "12px JetBrains Mono, monospace";
+            ctx.fillText("20,000,000", 10, 18);
+            ctx.fillStyle = "rgba(255,255,255,.55)";
+            ctx.fillText("10,000,000", 10, Math.floor(h / 2));
+            ctx.fillText("5,000,000", 10, h - 10);
         }
+        drawMiniChart();
 
-        setInterval(() => {
-            chartData.push(Math.floor(Math.random() * 30) + 10)
-            if (chartData.length > 40) chartData.shift()
-            drawChart()
-        }, 1000)
+        setInterval(function() {
+            chartData.shift();
+            var last = chartData[chartData.length - 1];
+            var next = Math.max(5, Math.min(20, last + (Math.random() * 4 - 2)));
+            chartData.push(next);
+            drawMiniChart();
+        }, 2400);
 
-        window.addEventListener('load', drawChart);
-
-        let totalAttacks = 0;
-        const targetAttackCounts = {};
-        const sourceAttackCounts = {};
-
-        // === Inisialisasi Raven.js (Peta) ===
-        document.getElementById('raven-iframe').addEventListener('load', function() {
-            const w = this.contentWindow
-            const raven = w.raven
-            if (!raven) return
-
-            // Menambahkan Style Custom untuk Peta
-            const style = w.document.createElement('style')
-            style.innerHTML = `
-                .raven-waiting, .taskbar-panel { display:none!important }
-
-                /* Latar belakang peta sedikit transparan */
-                .world-map-svg { background-color: rgba(2, 6, 23, 0.4) !important; }
-
-                /* Warna default negara */
-                .country { fill:#0f172a!important }
-                .country:hover {
-                    fill:#00bfff!important;
-                    filter:drop-shadow(0 0 12px rgba(0,191,255,.9))
-                }
-
-                /* Highlight saat serangan terjadi */
-                .country-highlight {
-                    stroke: #ff9900 !important;
-                    stroke-width: 3px !important; 
-                    filter: drop-shadow(0 0 10px #ff9900) drop-shadow(0 0 20px #ff990099) !important;
-                    transition: all 0.2s ease-out;
-                }
-
-                /* Styling garis serangan */
-                .attack-line {
-                    stroke-width:2.4;
-                    stroke-linecap:round;
-                    filter:
-                        drop-shadow(0 0 8px currentColor)
-                        drop-shadow(0 0 18px currentColor);
-                }
-
-                /* Animasi titik dampak */
-                .attack-circle {
-                    animation: impact-core .6s ease-out;
-                }
-
-                @keyframes impact-core {
-                    0% { r:4; opacity:.6 }
-                    50% { r:7; opacity:1 }
-                    100% { r:5; opacity:.9 }
-                }
-
-                /* Animasi cincin dampak */
-                .attack-impact {
-                    fill:none;
-                    stroke:currentColor;
-                    stroke-width:3;
-                    opacity:.9;
-                    animation: impact-ring 1.2s ease-out forwards;
-                }
-
-                @keyframes impact-ring {
-                    0% { r:4; opacity:1; stroke-width: 3; }
-                    70% { r:25; opacity:.35; stroke-width: 1; }
-                    100% { r:40; opacity:0; stroke-width: 0; }
-                }
-            `
-            w.document.head.appendChild(style)
-
-            // Inisialisasi Raven.js
-            raven.init_all({
-                world_type: null,
-                remove_countries: ['aq'],
-                height: window.innerHeight,
-                width: window.innerWidth,
-                backup_background_color: 'rgba(2, 6, 23, 0.4)',
-                orginal_country_color: '#0f172a',
-                selected_country_color: '#00bfff',
-                global_timeout: 1400,
-                db_length: 4000,
-                live_attacks_limit: 200,
-                location: 'scripts',
-                panels: ['tooltip'],
-                disable: ['taskbar'],
-                verbose: false
-            })
-
-            raven.init_world()
-
-            const attackTypes = [{
-                    type: 'Malware',
-                    color: '#ef4444',
-                    names: ['RondoDox Botnet', 'Trojan.Generic', 'Mirai Variant']
+        var map = new Datamap({
+            scope: "world",
+            element: document.getElementById("container1"),
+            projection: "winkel3",
+            fills: {
+                defaultFill: "rgba(255,255,255,.02)"
+            },
+            geographyConfig: {
+                hideAntarctica: true,
+                borderWidth: .6,
+                borderColor: "rgba(255,255,255,.12)",
+                popupTemplate: function(g) {
+                    return '<div class="hoverinfo">' + g.properties.name + "</div>"
                 },
-                {
-                    type: 'Phishing',
-                    color: '#a855f7',
-                    names: ['Credential Harvesting', 'Fake Login Page', 'Email Phishing']
-                },
-                {
-                    type: 'Exploit',
-                    color: '#22d3ee',
-                    names: ['HTTP RCE', 'Command Injection', 'SQL Injection']
-                }
-            ]
+                highlightOnHover: true,
+                highlightFillColor: "rgba(0,212,255,.08)",
+                highlightBorderColor: "rgba(255,30,109,.75)",
+                highlightBorderWidth: 1
+            },
+            done: function(d) {
+                var defs = d.svg.append("defs");
 
-            const countryMap = {
-                'us': 'USA',
-                'cn': 'China',
-                'br': 'Brazil',
-                'de': 'Germany',
-                'id': 'Indonesia',
-                'vn': 'Vietnam',
-                'in': 'India',
-                'au': 'Australia',
-                'ru': 'Russia',
-                'jp': 'Japan',
-                'kr': 'S. Korea',
-                'ca': 'Canada',
-                'fr': 'France',
-                'gb': 'UK',
-                'es': 'Spain',
-                'it': 'Italy'
-            };
-            const srcKeys = ['us', 'cn', 'ru', 'br', 'de', 'ca', 'fr', 'gb', 'es', 'it'];
-            const dstKeys = ['id', 'vn', 'in', 'au', 'jp', 'kr']; // Target utama
+                var glow = defs.append("filter")
+                    .attr("id", "glow")
+                    .attr("x", "-50%")
+                    .attr("y", "-50%")
+                    .attr("width", "200%")
+                    .attr("height", "200%");
 
-            const list = document.getElementById('attack-list')
-            const totalAttacksEl = document.getElementById('total-attacks');
-            const topCountryEl = document.getElementById('top-country');
-            const topSourcesListEl = document.getElementById('top-sources-list');
+                glow.append("feGaussianBlur")
+                    .attr("stdDeviation", "3")
+                    .attr("result", "blur");
 
-            function formatNumber(num) {
-                return num.toLocaleString();
+                var m = glow.append("feMerge");
+                m.append("feMergeNode").attr("in", "blur");
+                m.append("feMergeNode").attr("in", "SourceGraphic")
+            }
+        });
+
+        function rIP() {
+            return Math.floor(Math.random() * 256) + "." + Math.floor(Math.random() * 256) + "." + Math.floor(Math
+                .random() * 256) + "." + Math.floor(Math.random() * 256)
+        }
+
+        function impact(lat, lon, color) {
+            var c = map.projection([lon, lat]);
+            if (!c || isNaN(c[0]) || isNaN(c[1])) return;
+            var g = map.svg.append("g").attr("transform", "translate(" + c[0] + "," + c[1] + ")");
+            for (var i = 0; i < 3; i++) {
+                g.append("circle").attr("class", "impact-ripple").attr("stroke", color).style("animation-delay", i * .25 +
+                    "s")
+            }
+            g.append("circle").attr("class", "impact-core impact-glow").attr("fill", color);
+            setTimeout(function() {
+                g.remove()
+            }, 2200)
+        }
+
+        function arcGradient(id, from, to) {
+            var defs = map.svg.select("defs");
+            var grad = defs.append("linearGradient")
+                .attr("id", id)
+                .attr("gradientUnits", "userSpaceOnUse")
+                .attr("x1", from[0]).attr("y1", from[1])
+                .attr("x2", to[0]).attr("y2", to[1]);
+            grad.append("stop").attr("offset", "0%").attr("stop-color", "rgba(255,30,109,.0)");
+            grad.append("stop").attr("offset", "30%").attr("stop-color", "rgba(255,30,109,.85)");
+            grad.append("stop").attr("offset", "70%").attr("stop-color", "rgba(0,212,255,.85)");
+            grad.append("stop").attr("offset", "100%").attr("stop-color", "rgba(0,212,255,0)");
+            return "url(#" + id + ")"
+        }
+
+        function smoothArc(slat, slon, dlat, dlon, kind) {
+            var p1 = map.projection([slon, slat]);
+            var p2 = map.projection([dlon, dlat]);
+            if (!p1 || !p2) return;
+
+            var midX = (p1[0] + p2[0]) / 2;
+            var midY = (p1[1] + p2[1]) / 2 - 90;
+
+            var pathData = "M" + p1[0] + "," + p1[1] + " Q" + midX + "," + midY + " " + p2[0] + "," + p2[1];
+
+            var col = kind === "malware" ? "rgba(255,107,107,.95)" : (kind === "phishing" ? "rgba(168,85,247,.95)" :
+                "rgba(245,158,11,.95)");
+            var gid = "g" + Math.floor(Math.random() * 1e9);
+            var stroke = arcGradient(gid, p1, p2);
+
+            var path = map.svg.append("path")
+                .attr("d", pathData)
+                .attr("fill", "none")
+                .attr("stroke", stroke)
+                .attr("stroke-width", 2.2)
+                .attr("stroke-linecap", "round")
+                .attr("filter", "url(#glow)")
+                .attr("opacity", .95);
+
+            var length = path.node().getTotalLength();
+
+            path
+                .attr("stroke-dasharray", length + " " + length)
+                .attr("stroke-dashoffset", length)
+                .transition()
+                .duration(1100)
+                .ease("cubic-in-out")
+                .attr("stroke-dashoffset", 0)
+                .transition()
+                .duration(900)
+                .ease("linear")
+                .attr("opacity", 0)
+                .remove();
+
+            setTimeout(function() {
+                impact(dlat, dlon, col)
+            }, 820)
+        }
+
+
+        function addLog(srcName, dstName, type) {
+            var line =
+                '<span class="attack-source">' + srcName + '</span> ' +
+                '<span class="attack-ip">(' + rIP() + ')</span> ' +
+                '<span class="attack-target">attacks</span> ' +
+                '<span class="attack-source">' + dstName + '</span> ' +
+                '<span class="attack-ip">(' + rIP() + ')</span> ' +
+                '<span class="attack-type">(' + type + ')</span><br>';
+
+            var log = document.getElementById("attackdiv");
+            if (log) {
+                log.innerHTML += line;
+                log.scrollTop = log.scrollHeight;
             }
 
-            // Fungsi untuk menyorot negara target di peta
-            function highlightCountry(code, duration = 500) {
-                const w = document.getElementById('raven-iframe').contentWindow;
-                if (!w) return;
-
-                const countryElement = w.document.querySelector(
-                    `.world-map-svg .country[data-country-code="${code}"]`);
-
-                if (countryElement) {
-                    countryElement.classList.add('country-highlight');
-
-                    setTimeout(() => {
-                        countryElement.classList.remove('country-highlight');
-                    }, duration);
-                }
+            var logMobile = document.getElementById("attackdiv-mobile");
+            if (logMobile) {
+                logMobile.innerHTML += line;
+                logMobile.scrollTop = logMobile.scrollHeight;
             }
+        }
 
-            // Fungsi untuk memperbarui metrik serangan
-            function updateMetrics(targetCountryCode, sourceCountryCode) {
-                totalAttacks++;
 
-                totalAttacksEl.textContent = formatNumber(totalAttacks);
-
-                // Hitung target yang paling sering diserang
-                targetAttackCounts[targetCountryCode] = (targetAttackCounts[targetCountryCode] || 0) + 1;
-
-                let maxTargetCount = 0;
-                let topTargetCountryCode = 'N/A';
-                for (const code in targetAttackCounts) {
-                    if (targetAttackCounts[code] > maxTargetCount) {
-                        maxTargetCount = targetAttackCounts[code];
-                        topTargetCountryCode = code;
-                    }
-                }
-                topCountryEl.textContent = maxTargetCount > 0 ? countryMap[topTargetCountryCode] ||
-                    topTargetCountryCode.toUpperCase() : 'N/A';
-
-                // Hitung sumber serangan teratas
-                sourceAttackCounts[sourceCountryCode] = (sourceAttackCounts[sourceCountryCode] || 0) + 1;
-
-                const sortedSources = Object.keys(sourceAttackCounts)
-                    .map(code => ({
-                        code,
-                        count: sourceAttackCounts[code]
-                    }))
-                    .sort((a, b) => b.count - a.count)
-                    .slice(0, 8);
-
-                topSourcesListEl.innerHTML = '';
-
-                const sourceColors = {
-                    'us': '#22d3ee',
-                    'cn': '#ef4444',
-                    'ru': '#a855f7',
-                    'br': '#22d3ee',
-                    'de': '#ef4444',
-                    'ca': '#a855f7',
-                    'fr': '#22d3ee',
-                    'gb': '#ef4444',
-                    'es': '#a855f7',
-                    'it': '#22d3ee'
-                };
-
-                sortedSources.forEach(({
-                    code,
-                    count
-                }) => {
-                    const countryName = countryMap[code] || code.toUpperCase();
-                    const color = sourceColors[code] || '#a855f7';
-
-                    const sourceItem = document.createElement('div');
-                    sourceItem.className =
-                        'p-3 bg-slate-800/40 rounded-xl flex justify-between items-center border border-white/5 drop-shadow-[0_0_8px_rgba(0,191,255,0.1)]';
-                    sourceItem.innerHTML = `
-                        <div class="text-sm font-mono text-exploit drop-shadow-[0_0_3px] transition duration-300" style="color: ${color};">${countryName}</div>
-                        <div class="text-xs text-slate-400">${formatNumber(count)} attacks</div>
-                    `;
-                    topSourcesListEl.appendChild(sourceItem);
-                });
+        var points = [{
+                name: "USA",
+                flag: "🇺🇸",
+                lat: 37.09,
+                lon: -95.71,
+                ind: "Telecommunications"
+            },
+            {
+                name: "China",
+                flag: "🇨🇳",
+                lat: 35.86,
+                lon: 104.19,
+                ind: "Government"
+            },
+            {
+                name: "Russia",
+                flag: "🇷🇺",
+                lat: 61.52,
+                lon: 105.31,
+                ind: "Government"
+            },
+            {
+                name: "Germany",
+                flag: "🇩🇪",
+                lat: 51.16,
+                lon: 10.45,
+                ind: "Education"
+            },
+            {
+                name: "UK",
+                flag: "🇬🇧",
+                lat: 55.37,
+                lon: -3.43,
+                ind: "Telecommunications"
+            },
+            {
+                name: "Brazil",
+                flag: "🇧🇷",
+                lat: -14.23,
+                lon: -51.92,
+                ind: "Education"
+            },
+            {
+                name: "India",
+                flag: "🇮🇳",
+                lat: 20.59,
+                lon: 78.96,
+                ind: "Telecommunications"
+            },
+            {
+                name: "Japan",
+                flag: "🇯🇵",
+                lat: 36.2,
+                lon: 138.25,
+                ind: "Manufacturing"
+            },
+            {
+                name: "Indonesia",
+                flag: "🇮🇩",
+                lat: -2.54,
+                lon: 118.01,
+                ind: "Government"
+            },
+            {
+                name: "Australia",
+                flag: "🇦🇺",
+                lat: -25.27,
+                lon: 133.77,
+                ind: "Education"
+            },
+            {
+                name: "Canada",
+                flag: "🇨🇦",
+                lat: 56.13,
+                lon: -106.35,
+                ind: "Education"
+            },
+            {
+                name: "France",
+                flag: "🇫🇷",
+                lat: 46.23,
+                lon: 2.21,
+                ind: "Government"
+            },
+            {
+                name: "Turkey",
+                flag: "🇹🇷",
+                lat: 38.96,
+                lon: 35.24,
+                ind: "Telecommunications"
+            },
+            {
+                name: "Mexico",
+                flag: "🇲🇽",
+                lat: 23.63,
+                lon: -102.55,
+                ind: "Education"
+            },
+            {
+                name: "South Africa",
+                flag: "🇿🇦",
+                lat: -30.56,
+                lon: 22.94,
+                ind: "Manufacturing"
             }
+        ];
 
-            // Fungsi untuk menambahkan item ke log serangan
-            function addItem(t, name, from, to, color) {
-                const el = document.createElement('div')
-                el.className = 'transition-opacity duration-700'
-
-                el.innerHTML = `
-                    <div class="p-3 bg-slate-800/60 rounded-xl border-l-4 shadow-xl transition duration-300 hover:bg-slate-700/70 drop-shadow-[0_0_10px_rgba(0,191,255,0.3)]" style="border-color:${color}; border-right: 1px solid ${color}40; border-bottom: 1px solid ${color}40;">
-                        <div class="flex justify-between items-start text-sm">
-                            <div class="font-semibold text-slate-100 truncate flex-1">${from} <span class="text-slate-400 font-normal text-xs">→</span> ${to}</div>
-                            <div class="text-[10px] font-mono tracking-wider drop-shadow-[0_0_5px] flex-shrink-0 ml-2 py-0.5 px-1 rounded-full border border-current" style="color:${color}; box-shadow: 0 0 10px ${color}40;">${t.toUpperCase()}</div>
-                        </div>
-                        <div class="text-xs text-slate-300 mt-1">
-                            Attack: <span class="text-slate-200 font-mono">${name}</span>
-                        </div>
-                        <div class="text-[10px] text-slate-500 mt-1 text-right">
-                            ${new Date().toLocaleTimeString()}
-                        </div>
-                    </div>
-                `
-
-                list.prepend(el)
-                // Batasi jumlah log
-                if (list.children.length > 8) {
-                    list.lastChild.style.opacity = '0'
-                    setTimeout(() => list.removeChild(list.lastChild), 700)
-                }
+        var types = [{
+                label: "Malware",
+                kind: "malware"
+            },
+            {
+                label: "Phishing",
+                kind: "phishing"
+            },
+            {
+                label: "Exploit",
+                kind: "exploit"
+            },
+            {
+                label: "Ransomware",
+                kind: "malware"
+            },
+            {
+                label: "Brute Force",
+                kind: "exploit"
+            },
+            {
+                label: "Botnet",
+                kind: "malware"
             }
+        ];
 
-            // Fungsi untuk membuat efek cincin dampak pada titik serangan
-            function impactEffect() {
-                const w = document.getElementById('raven-iframe').contentWindow;
-                if (!w) return;
-                const svg = w.document.querySelector('svg')
-                if (!svg) return
-                svg.querySelectorAll('.attack-circle').forEach(c => {
-                    if (c.dataset.impact) return
-                    c.dataset.impact = 1
-                    const cx = c.getAttribute('cx')
-                    const cy = c.getAttribute('cy')
-                    const color = getComputedStyle(c).color
-                    // Buat dua cincin animasi
-                    for (let i = 0; i < 2; i++) {
-                        const ring = w.document.createElementNS('http://www.w3.org/2000/svg', 'circle')
-                        ring.setAttribute('cx', cx)
-                        ring.setAttribute('cy', cy)
-                        ring.setAttribute('r', 4)
-                        ring.setAttribute('class', 'attack-impact')
-                        ring.style.stroke = color
-                        ring.style.animationDelay = `${i * 0.15}s`
-                        svg.appendChild(ring)
-                        setTimeout(() => ring.remove(), 1300)
-                    }
-                })
+        var countryScores = {};
+        var industryScores = {};
+        var malwareScores = {};
+
+        function bump(obj, key, by) {
+            obj[key] = (obj[key] || 0) + by;
+        }
+
+        function topEntries(obj, n) {
+            var arr = [];
+            for (var k in obj) arr.push([k, obj[k]]);
+            arr.sort(function(a, b) {
+                return b[1] - a[1]
+            });
+            return arr.slice(0, n);
+        }
+
+        function renderTop(listEl, rows, kind) {
+            var el = document.getElementById(listEl);
+            el.innerHTML = "";
+            for (var i = 0; i < rows.length; i++) {
+                var name = rows[i][0];
+                var score = rows[i][1];
+                var left = '<div class="left"><div class="dot" style="background:' + (kind === "country" ?
+                        "rgba(255,30,109,.75)" : (kind === "industry" ? "rgba(0,212,255,.75)" : "rgba(245,158,11,.75)")) +
+                    '; box-shadow:0 0 0 6px rgba(255,255,255,.06), 0 0 18px ' + (kind === "country" ?
+                        "rgba(255,30,109,.22)" : (kind === "industry" ? "rgba(0,212,255,.18)" : "rgba(245,158,11,.18)")) +
+                    '"></div>' + (kind === "country" ? ('<div class="flag">' + (name.split(" ")[0] || "") + '</div>') :
+                        "") + '<div class="name">' + (kind === "country" ? name.replace(/^[^\s]+\s/, "") : name) +
+                    '</div></div>';
+                var right = '<div class="meta">' + score.toFixed(1) + '</div>';
+                var row = document.createElement("div");
+                row.className = "item";
+                row.innerHTML = left + right;
+                el.appendChild(row)
             }
+        }
 
-            // Fungsi utama untuk memicu serangan baru
-            function fire() {
-                const t = attackTypes[Math.floor(Math.random() * attackTypes.length)]
-                const name = t.names[Math.floor(Math.random() * t.names.length)]
+        function updateRightPanels() {
+            var tc = topEntries(countryScores, 5);
+            var ti = topEntries(industryScores, 3);
+            var tm = topEntries(malwareScores, 3);
 
-                const srcCode = srcKeys[Math.floor(Math.random() * srcKeys.length)];
-                // 80% kemungkinan menyerang target utama, 20% menyerang sumber lain
-                const targetPool = Math.random() < 0.8 ? dstKeys : srcKeys;
-                const dstCode = targetPool[Math.floor(Math.random() * targetPool.length)];
-
-                // Pastikan sumber dan target berbeda
-                if (srcCode === dstCode) return fire();
-
-                const fromName = countryMap[srcCode];
-                const toName = countryMap[dstCode];
-
-                // Tambahkan serangan ke peta Raven.js
-                raven.add_to_data_to_table({
-                        from: srcCode,
-                        to: dstCode
-                    }, {
-                        line: {
-                            from: t.color,
-                            to: t.color
-                        }
-                    },
-                    1200,
-                    ['line']
-                )
-
-                // Perbarui UI
-                addItem(t.type, name, fromName, toName, t.color)
-                updateMetrics(dstCode, srcCode);
-
-                highlightCountry(dstCode);
-                setTimeout(impactEffect, 100)
+            var tc2 = [];
+            for (var i = 0; i < tc.length; i++) {
+                var label = tc[i][0];
+                tc2.push([label, tc[i][1]])
             }
+            renderTop("topCountries", tc2, "country");
+            renderTop("topIndustries", ti, "industry");
+            renderTop("topMalware", tm, "malware");
+        }
 
-            // Mulai simulasi serangan
-            setTimeout(() => {
-                fire()
-                setInterval(fire, 300) // Pemicu serangan setiap 300ms
-            }, 600)
-        })
+        function pickTwo() {
+            var a = points[Math.floor(Math.random() * points.length)];
+            var b = points[Math.floor(Math.random() * points.length)];
+            if (a === b) return pickTwo();
+            return [a, b]
+        }
+
+        function randType() {
+            return types[Math.floor(Math.random() * types.length)]
+        }
+
+        function fireAttack() {
+            var ab = pickTwo();
+            var a = ab[0],
+                b = ab[1];
+            var t = randType();
+
+            smoothArc(a.lat, a.lon, b.lat, b.lon, t.kind);
+            addLog(a.name, b.name, t.label);
+
+            attackCount += Math.max(1, Math.round(baseRate * 1.6));
+            setCounter();
+
+            bump(countryScores, b.flag + " " + b.name, Math.random() * 2.2 + 0.4);
+            bump(industryScores, b.ind, Math.random() * 1.6 + 0.3);
+            bump(malwareScores, t.label, Math.random() * 1.8 + 0.4);
+
+            updateRightPanels();
+        }
+
+        for (var i0 = 0; i0 < 18; i0++) {
+            bump(countryScores, points[Math.floor(Math.random() * points.length)].flag + " " + points[Math.floor(Math
+                .random() * points.length)].name, Math.random() * 12 + 2);
+            bump(industryScores, ["Education", "Government", "Telecommunications", "Manufacturing"][Math.floor(Math
+                .random() * 4)], Math.random() * 8 + 2);
+            bump(malwareScores, ["Malware", "Phishing", "Exploit", "Ransomware", "Botnet"][Math.floor(Math.random() * 5)],
+                Math.random() * 10 + 2);
+        }
+        updateRightPanels();
+
+        var timer = null;
+
+        function rebuildTimer() {
+            if (timer) clearInterval(timer);
+            var interval = Math.max(140, Math.floor(1000 / Math.max(.2, baseRate)));
+            timer = setInterval(fireAttack, interval);
+        }
+
+        rebuildTimer();
+
+        setInterval(function() {
+            attackCount += Math.max(1, Math.round(baseRate));
+            setCounter();
+        }, 1000);
+
+        d3.select(window).on("resize", function() {
+            location.reload()
+        });
     </script>
+    <script>
+        var panel = document.getElementById("countryPanel");
+        var flagEl = document.getElementById("cp-flag");
+        var nameEl = document.getElementById("cp-name");
+        var loadingEl = document.getElementById("cpLoading");
+
+        document.getElementById("cp-close").onclick = function() {
+            panel.classList.remove("show");
+            setTimeout(function() {
+                panel.classList.add("hidden");
+            }, 300);
+        };
+
+        function randomSeries(n, min, max) {
+            var arr = [],
+                v = (min + max) / 2;
+            for (var i = 0; i < n; i++) {
+                v = Math.max(min, Math.min(max, v + (Math.random() - .5) * (max - min) * .3));
+                arr.push(v);
+            }
+            return arr;
+        }
+
+        function drawArea(canvas, data) {
+            var ctx = canvas.getContext("2d");
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            var w = canvas.width;
+            var h = canvas.height;
+            var max = Math.max.apply(null, data);
+
+            ctx.beginPath();
+            for (var i = 0; i < data.length; i++) {
+                var x = i * (w / (data.length - 1));
+                var y = h - (data[i] / max) * h;
+                i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+            }
+            ctx.strokeStyle = "#ff1e6d";
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            ctx.lineTo(w, h);
+            ctx.lineTo(0, h);
+            ctx.closePath();
+            var grad = ctx.createLinearGradient(0, 0, 0, h);
+            grad.addColorStop(0, "rgba(255,30,109,.4)");
+            grad.addColorStop(1, "rgba(255,30,109,0)");
+            ctx.fillStyle = grad;
+            ctx.fill();
+        }
+
+        function drawSpark(canvas) {
+            var data = randomSeries(24, 1, 10);
+            var ctx = canvas.getContext("2d");
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            ctx.beginPath();
+            for (var i = 0; i < data.length; i++) {
+                var x = i * (canvas.width / (data.length - 1));
+                var y = canvas.height - (data[i] / 10) * canvas.height;
+                i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+            }
+            ctx.strokeStyle = "#ff1e6d";
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+        }
+
+        map.svg.selectAll(".datamaps-subunit")
+            .on("click", function(geo) {
+                panel.classList.remove("hidden");
+                panel.classList.remove("show");
+                loadingEl.style.display = "flex";
+
+                setTimeout(function() {
+                    flagEl.textContent = "🏳️";
+                    nameEl.textContent = geo.properties.name;
+
+                    drawArea(document.getElementById("cpTrend"), randomSeries(30, 20, 100));
+                    document.querySelectorAll(".spark").forEach(drawSpark);
+
+                    loadingEl.style.display = "none";
+                    panel.classList.add("show");
+                }, 600 + Math.random() * 400);
+            });
+    </script>
+
+    <script>
+        function adjustMapZoom() {
+            var mapEl = document.getElementById("container1");
+            if (!mapEl) return;
+
+            if (window.innerWidth <= 768) {
+                var isPortrait = window.innerHeight > window.innerWidth;
+                mapEl.style.transform = isPortrait ?
+                    "scale(1.4) translateY(-8%)" :
+                    "scale(1.25) translateY(-4%)";
+            } else {
+                mapEl.style.transform = "none";
+            }
+        }
+
+        window.addEventListener("resize", adjustMapZoom);
+        adjustMapZoom();
+    </script>
+    <script>
+        var svg = map.svg;
+        var g = svg.select("g");
+
+        var zoom = d3.behavior.zoom()
+            .scaleExtent([1, 4])
+            .on("zoom", function() {
+                g.attr("transform",
+                    "translate(" + d3.event.translate + ") scale(" + d3.event.scale + ")"
+                );
+            });
+
+        svg.call(zoom);
+
+        document.getElementById("zoomIn").onclick = function() {
+            zoom.scale(zoom.scale() * 1.25);
+            zoom.event(svg.transition().duration(300));
+        };
+
+        document.getElementById("zoomOut").onclick = function() {
+            zoom.scale(zoom.scale() / 1.25);
+            zoom.event(svg.transition().duration(300));
+        };
+
+        document.getElementById("zoomReset").onclick = function() {
+            zoom.scale(1);
+            zoom.translate([0, 0]);
+            zoom.event(svg.transition().duration(400));
+        };
+    </script>
+
+
 
 </body>
 
