@@ -24,3 +24,7 @@ Route::get('/blog/{slug}', [BlogController::class, 'detail']);
 Route::get('/products', function () {
     return view('products.index');
 });
+
+Route::get('/threat', function () {
+    return view('raven');
+});
