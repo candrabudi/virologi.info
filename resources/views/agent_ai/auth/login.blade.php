@@ -265,6 +265,14 @@
                         </button>
                     </div>
                 </form>
+                <div class="mt-12 text-center">
+                    <p class="text-xs text-gray-500 font-medium">
+                        Belum memiliki identitas?
+                        <a href="{{ route('ai.register') }}"
+                            class="text-white font-bold hover:underline underline-offset-4 decoration-gray-600">Daftar
+                            Akun Baru</a>
+                    </p>
+                </div>
 
             </div>
 
@@ -541,7 +549,6 @@
                 })
         }
 
-        // otomatis mulai timer saat OTP view tampil
         const _origToOTP = toOTP
         toOTP = function(e) {
             _origToOTP(e)
