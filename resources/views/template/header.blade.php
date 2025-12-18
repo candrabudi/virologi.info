@@ -68,7 +68,7 @@
                                 <div class="loader-section section-right"></div>
                             </div>
                             <div class="button-area">
-                                <a href="contact.html"
+                                <a href="#"
                                     class="rts-btn btn-primary ml--20 ml_sm--5 header-one-btn quote-btn">Kontak Kami</a>
                                 <button id="menu-btn" class="menu menu-btn ml--20 ml_sm--5">
                                     <img class="menu-light" src="{{ asset('assets/images/icons/01.svg') }}" alt="Menu-icon">

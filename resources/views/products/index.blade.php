@@ -57,11 +57,11 @@
                 <div class="col-lg-4 col-md-6 col-sm-12" data-animation="fadeInUp" data-delay="0.2"
                     style="transform: translate(0px, 0px); opacity: 1;">
                     <div class="rts-single-shop-area">
-                        <a href="shop-single.html" class="thumbnail">
+                        <a href="s#" class="thumbnail">
                             <img src="assets/images/shop/01.webp" alt="shop">
                         </a>
                         <div class="inner-content">
-                            <a href="shop-single.html">
+                            <a href="s#">
                                 <h4 class="title">Music Headphones</h4>
                             </a>
                             <div class="pricing-area-wrapper">
