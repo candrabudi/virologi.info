@@ -101,12 +101,15 @@ class AuthController extends Controller
         ]);
 
         $ipKey = 'login-ip:'.$request->ip();
+
         if (RateLimiter::tooManyAttempts($ipKey, 10)) {
             return response()->json([
                 'success' => false,
-                'message' => 'Terlalu banyak percobaan login, silakan tunggu sebentar',
+                'code' => 'LOGIN_RATE_LIMIT',
+                'message' => 'Terlalu banyak percobaan login dari perangkat ini. Silakan coba lagi dalam 1 menit.',
             ], 429);
         }
+
         RateLimiter::hit($ipKey, 60);
 
         $identity = Str::lower(trim($request->identity));
@@ -115,14 +118,14 @@ class AuthController extends Controller
             $q->whereRaw('LOWER(username) = ?', [$identity])
               ->orWhereRaw('LOWER(email) = ?', [$identity]);
         })
-            // ->whereIn('role', ['admin', 'editor'])
             ->where('status', 'active')
             ->first();
 
         if (!$user || !Hash::check($request->password, $user->password)) {
             return response()->json([
                 'success' => false,
-                'message' => 'Username, email, atau kata sandi tidak valid',
+                'code' => 'INVALID_CREDENTIALS',
+                'message' => 'Login gagal. Username/email atau kata sandi salah.',
             ], 401);
         }
 
@@ -132,7 +135,8 @@ class AuthController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Kredensial valid',
+            'code' => 'LOGIN_STEP1_SUCCESS',
+            'message' => 'Login tahap pertama berhasil. Silakan lanjutkan verifikasi OTP.',
         ]);
     }
 
@@ -143,7 +147,8 @@ class AuthController extends Controller
         if (!$userId) {
             return response()->json([
                 'success' => false,
-                'message' => 'Sesi login telah berakhir, silakan login ulang',
+                'code' => 'SESSION_EXPIRED',
+                'message' => 'Sesi login telah berakhir. Silakan login ulang untuk melanjutkan.',
             ], 419);
         }
 
@@ -154,17 +159,21 @@ class AuthController extends Controller
         if (!$user) {
             return response()->json([
                 'success' => false,
-                'message' => 'Akses ditolak',
+                'code' => 'ACCESS_DENIED',
+                'message' => 'Akses ditolak. Akun tidak valid atau sudah tidak aktif.',
             ], 403);
         }
 
         $otpKey = 'otp-send-user:'.$user->id;
+
         if (RateLimiter::tooManyAttempts($otpKey, 5)) {
             return response()->json([
                 'success' => false,
-                'message' => 'Terlalu sering meminta OTP, silakan tunggu',
+                'code' => 'OTP_SEND_RATE_LIMIT',
+                'message' => 'Anda terlalu sering meminta kode OTP. Silakan tunggu beberapa saat sebelum mencoba lagi.',
             ], 429);
         }
+
         RateLimiter::hit($otpKey, 60);
 
         $otp = (string) random_int(100000, 999999);
@@ -173,7 +182,9 @@ class AuthController extends Controller
         Otp::where('user_id', $user->id)
             ->where('purpose', 'login')
             ->whereNull('verified_at')
-            ->update(['expires_at' => Carbon::now()]);
+            ->update([
+                'expires_at' => Carbon::now(),
+            ]);
 
         Otp::create([
             'user_id' => $user->id,
@@ -187,18 +198,20 @@ class AuthController extends Controller
 
         $body =
             "Halo {$user->username}\n\n".
-            "Kode OTP Login Panel Virologi:\n\n".
+            "Berikut adalah kode OTP untuk login ke Panel Virologi:\n\n".
             "{$otp}\n\n".
-            "Berlaku sampai {$expiresAt->format('Y-m-d H:i:s')} WIB\n\n".
-            'Jika ini bukan Anda, abaikan email ini.';
+            "Kode ini berlaku hingga {$expiresAt->format('d M Y H:i:s')} WIB.\n\n".
+            'Jika Anda tidak merasa melakukan login, abaikan email ini.';
 
         Mail::raw($body, function ($message) use ($user) {
-            $message->to($user->email)->subject('Kode OTP Login Panel Virologi');
+            $message->to($user->email)
+                ->subject('Kode OTP Login - Panel Virologi');
         });
 
         return response()->json([
             'success' => true,
-            'message' => 'Kode OTP telah dikirim ke email Anda',
+            'code' => 'OTP_SENT',
+            'message' => 'Kode OTP telah dikirim ke email Anda. Kode berlaku selama 5 menit.',
         ]);
     }
 
@@ -213,17 +226,21 @@ class AuthController extends Controller
         if (!$userId) {
             return response()->json([
                 'success' => false,
-                'message' => 'Sesi login telah berakhir, silakan login ulang',
+                'code' => 'SESSION_EXPIRED',
+                'message' => 'Sesi login telah berakhir. Silakan login ulang untuk mendapatkan OTP baru.',
             ], 419);
         }
 
         $verifyKey = 'otp-verify-user:'.$userId;
+
         if (RateLimiter::tooManyAttempts($verifyKey, 8)) {
             return response()->json([
                 'success' => false,
-                'message' => 'Terlalu banyak percobaan OTP, silakan tunggu',
+                'code' => 'OTP_VERIFY_RATE_LIMIT',
+                'message' => 'Terlalu banyak percobaan OTP. Silakan tunggu sebentar sebelum mencoba kembali.',
             ], 429);
         }
+
         RateLimiter::hit($verifyKey, 60);
 
         $otp = Otp::where('user_id', $userId)
@@ -236,7 +253,8 @@ class AuthController extends Controller
         if (!$otp || !password_verify($request->otp, $otp->code_hash)) {
             return response()->json([
                 'success' => false,
-                'message' => 'Kode OTP salah atau sudah kedaluwarsa',
+                'code' => 'OTP_INVALID',
+                'message' => 'Kode OTP tidak valid atau sudah kedaluwarsa. Silakan minta OTP baru.',
             ], 401);
         }
 
@@ -260,7 +278,8 @@ class AuthController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Login berhasil',
+            'code' => 'LOGIN_SUCCESS',
+            'message' => 'Login berhasil. Selamat datang di panel.',
         ]);
     }
 

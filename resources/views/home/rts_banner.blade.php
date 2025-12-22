@@ -29,7 +29,7 @@
 </style>
 <div class="rts-banner-ten-area banner-bg_12 rts-section-gap video-bg-container">
     <video autoplay muted loop playsinline>
-        <source src="{{ asset('3129902-uhd_3840_2160_25fps.mp4') }}" type="video/mp4">
+        <source src="{{ asset('video_background.mp4') }}" type="video/mp4">
     </video>
     <div class="video-bg-overlay"></div>
     <div class="container video-bg-content">

@@ -364,22 +364,6 @@
             document.getElementById('o6'),
         ]
 
-        function focusNext(curr, nextId) {
-            curr.value = curr.value.replace(/[^0-9]/g, '')
-            if (curr.value.length === 1 && nextId) {
-                document.getElementById(nextId).focus()
-            }
-        }
-
-        otpInputs.forEach((box, idx) => {
-            box.addEventListener('keydown', e => {
-                if (e.key === 'Backspace' && !box.value && otpInputs[idx - 1]) {
-                    otpInputs[idx - 1].focus()
-                }
-            })
-            box.addEventListener('focus', () => box.value = '')
-        })
-
         function showToast(message, type = 'error') {
             if (!toast) return
 
@@ -402,6 +386,31 @@
             }, 3000)
         }
 
+        function handleApiError(error) {
+            if (error.response && error.response.data) {
+                const res = error.response.data
+                showToast(res.message || 'Terjadi kesalahan')
+                return
+            }
+            showToast('Koneksi bermasalah, silakan coba lagi')
+        }
+
+        function focusNext(curr, nextId) {
+            curr.value = curr.value.replace(/[^0-9]/g, '')
+            if (curr.value.length === 1 && nextId) {
+                document.getElementById(nextId).focus()
+            }
+        }
+
+        otpInputs.forEach((box, idx) => {
+            box.addEventListener('keydown', e => {
+                if (e.key === 'Backspace' && !box.value && otpInputs[idx - 1]) {
+                    otpInputs[idx - 1].focus()
+                }
+            })
+            box.addEventListener('focus', () => box.value = '')
+        })
+
         function toOTP(e) {
             e.preventDefault()
 
@@ -411,21 +420,21 @@
             btn.disabled = true
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>'
 
-            const data = new FormData(form)
-
-            axios.post('/ai-agent/login', data)
+            axios.post('/ai-agent/login', new FormData(form))
                 .then(res => {
                     if (!res.data.success) {
-                        throw new Error(res.data.message || 'Login gagal')
+                        showToast(res.data.message)
+                        return Promise.reject()
                     }
                     return axios.post('/ai-agent/login/send-otp')
                 })
                 .then(res => {
                     if (!res.data.success) {
-                        throw new Error(res.data.message || 'Gagal mengirim OTP')
+                        showToast(res.data.message)
+                        return Promise.reject()
                     }
 
-                    showToast(res.data.message || 'Kode OTP dikirim', 'success')
+                    showToast(res.data.message, 'success')
 
                     loginView.style.opacity = '0'
                     loginView.style.transform = 'translateY(-10px)'
@@ -433,16 +442,17 @@
                     setTimeout(() => {
                         loginView.style.display = 'none'
                         otpView.style.display = 'block'
-
                         setTimeout(() => {
                             otpView.style.opacity = '1'
                             otpView.style.transform = 'translateY(0)'
                             otpInputs[0].focus()
                         }, 50)
                     }, 400)
+
+                    startResendTimer()
                 })
                 .catch(err => {
-                    showToast(err.message || 'Login gagal')
+                    if (err) handleApiError(err)
                 })
                 .finally(() => {
                     btn.disabled = false
@@ -460,7 +470,7 @@
             const otp = otpInputs.map(i => i.value).join('')
 
             if (otp.length !== 6) {
-                showToast('OTP harus 6 digit')
+                showToast('Kode OTP harus terdiri dari 6 digit')
                 btn.disabled = false
                 btn.innerHTML = '<span>Verifikasi Akun</span>'
                 return
@@ -471,10 +481,11 @@
                 })
                 .then(res => {
                     if (!res.data.success) {
-                        throw new Error(res.data.message || 'OTP tidak valid')
+                        showToast(res.data.message)
+                        return Promise.reject()
                     }
 
-                    showToast('Login berhasil', 'success')
+                    showToast(res.data.message, 'success')
 
                     otpView.style.opacity = '0'
                     otpView.style.transform = 'scale(0.98)'
@@ -482,7 +493,6 @@
                     setTimeout(() => {
                         otpView.style.display = 'none'
                         successView.style.display = 'block'
-
                         setTimeout(() => {
                             successView.style.opacity = '1'
                         }, 50)
@@ -493,16 +503,14 @@
                     }, 1500)
                 })
                 .catch(err => {
-                    showToast(err.message || 'OTP salah')
+                    if (err) handleApiError(err)
                 })
                 .finally(() => {
                     btn.disabled = false
                     btn.innerHTML = '<span>Verifikasi Akun</span>'
                 })
         }
-    </script>
 
-    <script>
         let resendSeconds = 45
         let resendInterval = null
 
@@ -518,9 +526,7 @@
 
             resendInterval = setInterval(() => {
                 resendSeconds--
-
-                const s = resendSeconds < 10 ? '0' + resendSeconds : resendSeconds
-                timer.textContent = `00:${s}`
+                timer.textContent = `00:${resendSeconds < 10 ? '0' + resendSeconds : resendSeconds}`
 
                 if (resendSeconds <= 0) {
                     clearInterval(resendInterval)
@@ -537,24 +543,19 @@
             axios.post('/ai-agent/login/send-otp')
                 .then(res => {
                     if (!res.data.success) {
-                        throw new Error(res.data.message || 'Gagal mengirim ulang OTP')
+                        showToast(res.data.message)
+                        return Promise.reject()
                     }
-
-                    showToast(res.data.message || 'Kode OTP dikirim ulang', 'success')
+                    showToast(res.data.message, 'success')
                     startResendTimer()
                 })
                 .catch(err => {
-                    showToast(err.message || 'Gagal mengirim ulang OTP')
+                    if (err) handleApiError(err)
                     btn.disabled = false
                 })
         }
-
-        const _origToOTP = toOTP
-        toOTP = function(e) {
-            _origToOTP(e)
-            setTimeout(startResendTimer, 600)
-        }
     </script>
+
 
 </body>
 
