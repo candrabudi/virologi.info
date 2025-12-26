@@ -9,7 +9,7 @@
                         <div class="thumbnail">
                             <a href="/" aria-label="Homepage">
                                 <img
-                                    src="{{ $setting?->logo_rectangle_webp ?? asset('logo-180.webp') }}"
+                                    src="{{ $setting?->logo_rectangle ?? asset('logo-180.webp') }}"
                                     width="180"
                                     height="59"
                                     alt="Finbiz Logo"
