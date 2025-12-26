@@ -25,11 +25,17 @@
                 </div>
             </div>
 
-            <!-- IMAGE -->
+            <!-- IMAGE (LCP SAFE) -->
             <div class="col-lg-6 text-center">
-                <img src="{{ asset('cyber_gif.webp') }}" width="720" height="408" alt="Cyber Threat Map"
-                    fetchpriority="high" decoding="async" style="width:100%; height:auto;">
-
+                <img
+                    src="{{ asset('cyber_gif.webp') }}"
+                    alt="Cyber Threat Map"
+                    width="720"
+                    height="408"
+                    decoding="async"
+                    fetchpriority="high"
+                    style="width:100%; height:auto;"
+                >
             </div>
 
         </div>
