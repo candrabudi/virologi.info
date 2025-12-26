@@ -60,13 +60,13 @@
                                 </ul>
                             </div>
 
-{{-- 
+
                             <div class="loader-wrapper">
                                 <div class="loader">
                                 </div>
                                 <div class="loader-section section-left"></div>
                                 <div class="loader-section section-right"></div>
-                            </div> --}}
+                            </div>
                             <div class="button-area">
                                 <a href="#"
                                     class="rts-btn btn-primary ml--20 ml_sm--5 header-one-btn quote-btn">Kontak Kami</a>
