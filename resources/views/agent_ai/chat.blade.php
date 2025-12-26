@@ -453,21 +453,18 @@
         }
 
         function escapeHtml(s) {
-            return String(s).replace(/[&<>"']/g, m =>
-                ({
-                    '&': '&amp;',
-                    '<': '&lt;',
-                    '>': '&gt;',
-                    '"': '&quot;',
-                    "'": '&#039;'
-                } [m])
-            )
+            return String(s).replace(/[&<>"']/g, m => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            } [m]))
         }
 
         function linkify(s) {
             return s.replace(/(https?:\/\/[^\s<]+)/g, u =>
-                `<a href="${u}" target="_blank" class="text-sky-300 underline underline-offset-4">${u}</a>`
-            )
+                `<a href="${u}" target="_blank" class="text-sky-300 underline underline-offset-4">${u}</a>`)
         }
 
         function renderAssistant(raw) {
@@ -475,36 +472,46 @@
             let html = ''
             let ul = false
             let ol = false
-
             const close = () => {
-                if (ul) html += '</ul>', ul = false
-                if (ol) html += '</ol>', ol = false
+                if (ul) {
+                    html += '</ul>';
+                    ul = false
+                }
+                if (ol) {
+                    html += '</ol>';
+                    ol = false
+                }
             }
-
             lines.forEach(l => {
                 const t = l.trim()
-                if (!t) return close()
-
+                if (!t) {
+                    close();
+                    return
+                }
                 const o = t.match(/^(\d+)\.\s+(.*)$/)
                 if (o) {
-                    if (!ol) close(), html += '<ol class="list-decimal pl-6 space-y-2 text-gray-200">', ol = true
+                    if (!ol) {
+                        close();
+                        html += '<ol class="list-decimal pl-6 space-y-2 text-gray-200">';
+                        ol = true
+                    }
                     html += `<li>${linkify(o[2].replace(/\*\*(.+?)\*\*/g,'<b class="text-white">$1</b>'))}</li>`
                     return
                 }
-
                 const u = t.match(/^[-•]\s+(.*)$/)
                 if (u) {
-                    if (!ul) close(), html += '<ul class="list-disc pl-6 space-y-2 text-gray-200">', ul = true
+                    if (!ul) {
+                        close();
+                        html += '<ul class="list-disc pl-6 space-y-2 text-gray-200">';
+                        ul = true
+                    }
                     html += `<li>${linkify(u[1].replace(/\*\*(.+?)\*\*/g,'<b class="text-white">$1</b>'))}</li>`
                     return
                 }
-
                 close()
-                html += `<p class="text-gray-200 leading-relaxed">${linkify(
-            t.replace(/\*\*(.+?)\*\*/g,'<b class="text-white">$1</b>')
-        )}</p>`
+                html +=
+                    `<p class="text-gray-200 leading-relaxed">${linkify(t.replace(/\*\*(.+?)\*\*/g,'<b class="text-white">$1</b>'))}</p>`
             })
-
             close()
             return html
         }
@@ -530,10 +537,10 @@
             el.className = 'ai-message flex gap-5'
             el.innerHTML = `
         <div class="w-9 h-9 rounded-full bg-white flex items-center justify-center">
-            <i class="fas fa-star text-black text-xs"></i>
+            <i class="fas fa-shield-halved text-black text-xs"></i>
         </div>
         <div class="flex-1">
-            <p class="text-[10px] font-bold text-gray-600 uppercase tracking-widest mb-3">Response Engine</p>
+            <p class="text-[10px] font-bold text-gray-600 uppercase tracking-widest mb-3">Cyber Security Assistant</p>
             <div class="space-y-3 text-[15px]">${renderAssistant(content)}</div>
         </div>`
             messageContainer.appendChild(el)
@@ -545,11 +552,11 @@
             el.className = 'ai-message flex gap-5'
             el.innerHTML = `
         <div class="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center">
-            <i class="fas fa-ellipsis-h text-xs text-white/70"></i>
+            <i class="fas fa-spinner fa-spin text-xs text-white/70"></i>
         </div>
         <div class="flex-1">
-            <p class="text-[10px] font-bold text-gray-600 uppercase tracking-widest mb-3">Response Engine</p>
-            <div class="thinking-dots text-gray-400">Thinking<span>.</span><span>.</span><span>.</span></div>
+            <p class="text-[10px] font-bold text-gray-600 uppercase tracking-widest mb-3">Cyber Security Assistant</p>
+            <div class="text-gray-400 italic">Menganalisis permintaan keamanan...</div>
         </div>`
             messageContainer.appendChild(el)
             thinkingEl = el
@@ -562,9 +569,7 @@
         }
 
         function closeAllSessionMenus() {
-            document.querySelectorAll('[data-session-menu]').forEach(m => {
-                m.classList.add('hidden')
-            })
+            document.querySelectorAll('[data-session-menu]').forEach(m => m.classList.add('hidden'))
             openMenuToken = null
         }
 
@@ -572,15 +577,11 @@
             e.stopPropagation()
             const menu = document.querySelector(`[data-session-menu="${token}"]`)
             if (!menu) return
-
-            if (openMenuToken && openMenuToken !== token) {
-                closeAllSessionMenus()
-            }
-
-            const isHidden = menu.classList.contains('hidden')
+            if (openMenuToken && openMenuToken !== token) closeAllSessionMenus()
+            const hidden = menu.classList.contains('hidden')
             closeAllSessionMenus()
-            if (isHidden) {
-                menu.classList.remove('hidden')
+            if (hidden) {
+                menu.classList.remove('hidden');
                 openMenuToken = token
             }
         }
@@ -589,43 +590,31 @@
             axios.get('/ai-agent/sessions').then(res => {
                 sessionList.innerHTML = ''
                 const items = (res.data || []).slice().sort((a, b) => (b.is_pinned ? 1 : 0) - (a.is_pinned ? 1 : 0))
-
                 items.forEach(s => {
                     const row = document.createElement('div')
-                    row.className = `
-                px-4 py-3 rounded-lg cursor-pointer text-sm
-                ${activeSession === s.session_token ? 'bg-white/10 text-white' : 'text-gray-400 hover:text-white hover:bg-white/5'}
-            `
+                    row.className =
+                        `px-4 py-3 rounded-lg cursor-pointer text-sm ${activeSession===s.session_token?'bg-white/10 text-white':'text-gray-400 hover:text-white hover:bg-white/5'}`
                     row.innerHTML = `
                 <div class="flex items-center justify-between gap-3">
-                    <div class="truncate flex-1">
-                        ${escapeHtml(s.title || 'Percakapan Baru')}
-                    </div>
-
+                    <div class="truncate flex-1">${escapeHtml(s.title||'Percakapan Baru')}</div>
                     <div class="relative flex-shrink-0">
-                        <button type="button"
-                            class="w-8 h-8 rounded-lg hover:bg-white/10 flex items-center justify-center opacity-80 hover:opacity-100"
-                            onclick="toggleSessionMenu(event,'${s.session_token}')"
-                            aria-label="Menu">
+                        <button class="w-8 h-8 rounded-lg hover:bg-white/10 flex items-center justify-center opacity-80 hover:opacity-100"
+                            onclick="toggleSessionMenu(event,'${s.session_token}')">
                             <i class="fas fa-ellipsis text-xs"></i>
                         </button>
-
                         <div data-session-menu="${s.session_token}"
                             class="hidden absolute right-0 mt-2 w-40 bg-[#111] border border-white/10 rounded-xl shadow-2xl overflow-hidden z-[60]">
-                            <button type="button"
-                                class="w-full px-3 py-2 text-left text-xs hover:bg-white/5"
+                            <button class="w-full px-3 py-2 text-left text-xs hover:bg-white/5"
                                 onclick="pinSession(event,'${s.session_token}')">
-                                ${s.is_pinned ? 'Unpin Chat' : 'Pin Chat'}
+                                ${s.is_pinned?'Unpin Chat':'Pin Chat'}
                             </button>
-                            <button type="button"
-                                class="w-full px-3 py-2 text-left text-xs text-red-400 hover:bg-red-500/10"
+                            <button class="w-full px-3 py-2 text-left text-xs text-red-400 hover:bg-red-500/10"
                                 onclick="openDeleteModal(event,'${s.session_token}')">
                                 Hapus Chat
                             </button>
                         </div>
                     </div>
-                </div>
-            `
+                </div>`
                     row.onclick = () => openSession(s.session_token)
                     sessionList.appendChild(row)
                 })
@@ -640,7 +629,6 @@
             welcomeView.style.display = 'none'
             if (push) setUrl(token)
             loadSessions()
-
             axios.get(`/ai-agent/sessions/${token}`).then(res => {
                 messageContainer.innerHTML = ''
                 welcomeView.style.display = 'none'
@@ -652,25 +640,12 @@
         function createNewChat() {
             if (isCreatingSession) return
             isCreatingSession = true
-
-            axios.get('/ai-agent/sessions').then(res => {
-                const empty = (res.data || []).find(s => s.messages_count === 0)
-                if (empty) {
-                    activeSession = empty.session_token
-                    setUrl(activeSession)
-                    messageContainer.innerHTML = ''
-                    welcomeView.style.display = 'block'
-                    loadSessions()
-                    return
-                }
-
-                return axios.post('/ai-agent/sessions').then(r => {
-                    activeSession = r.data.session_token
-                    setUrl(activeSession)
-                    messageContainer.innerHTML = ''
-                    welcomeView.style.display = 'block'
-                    loadSessions()
-                })
+            axios.post('/ai-agent/sessions').then(r => {
+                activeSession = r.data.session_token
+                setUrl(activeSession)
+                messageContainer.innerHTML = ''
+                welcomeView.style.display = 'block'
+                loadSessions()
             }).finally(() => isCreatingSession = false)
         }
 
@@ -678,7 +653,6 @@
             appendUser(text)
             appendThinking()
             sendBtn.disabled = true
-
             axios.post(`/ai-agent/sessions/${activeSession}/message`, {
                     content: text
                 })
@@ -687,9 +661,10 @@
                     appendAssistant(res.data.content)
                     loadSessions()
                 })
-                .catch(() => {
+                .catch(err => {
                     removeThinking()
-                    appendAssistant('Terjadi kesalahan. Silakan coba lagi.')
+                    const msg = err.response?.data?.content || 'Permintaan tidak dapat diproses.'
+                    appendAssistant(msg)
                 })
                 .finally(() => sendBtn.disabled = false)
         }
@@ -698,10 +673,8 @@
             e.preventDefault()
             const text = chatInput.value.trim()
             if (!text) return
-
             chatInput.value = ''
             adjustInputHeight(chatInput)
-
             if (!activeSession) {
                 createNewChat()
                 const w = setInterval(() => {
@@ -712,7 +685,6 @@
                 }, 50)
                 return
             }
-
             sendMessage(text)
         })
 
@@ -746,7 +718,7 @@
             axios.delete(`/ai-agent/sessions/${deleteTargetToken}`).then(() => {
                 if (activeSession === deleteTargetToken) {
                     activeSession = null
-                    history.pushState({}, '', '/ai-agent/chat')
+                    history.pushState({}, '', `/ai-agent/chat`)
                     messageContainer.innerHTML = ''
                     welcomeView.style.display = 'block'
                 }
@@ -781,9 +753,7 @@
         })
 
         document.addEventListener('click', e => {
-            if (!e.target.closest('[data-session-menu]') && !e.target.closest('button[aria-label="Menu"]')) {
-                closeAllSessionMenus()
-            }
+            if (!e.target.closest('[data-session-menu]') && !e.target.closest('button')) closeAllSessionMenus()
         })
 
         viewport.addEventListener('scroll', closeAllSessionMenus, {
@@ -797,6 +767,7 @@
             sendBtn.disabled = true
         })
     </script>
+
 
 
 </body>

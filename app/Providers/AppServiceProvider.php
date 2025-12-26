@@ -2,6 +2,11 @@
 
 namespace App\Providers;
 
+use App\Models\FooterContact;
+use App\Models\FooterQuickLink;
+use App\Models\FooterSetting;
+use App\Models\Website;
+use App\Observers\GlobalLayoutObserver;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -11,7 +16,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
     }
 
     /**
@@ -19,6 +23,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        Website::observe(GlobalLayoutObserver::class);
+        FooterSetting::observe(GlobalLayoutObserver::class);
+        FooterQuickLink::observe(GlobalLayoutObserver::class);
+        FooterContact::observe(GlobalLayoutObserver::class);
     }
 }

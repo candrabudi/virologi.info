@@ -7,23 +7,50 @@ use Illuminate\Database\Eloquent\Model;
 class Product extends Model
 {
     protected $fillable = [
-        'name',
         'slug',
-        'description',
+
+        'name',
+        'subtitle',
+        'summary',
         'content',
+
+        'product_type',
+
+        'ai_domain',
+        'ai_level',
+        'ai_keywords',
+        'ai_intents',
+        'ai_use_cases',
+        'ai_priority',
+        'is_ai_visible',
+        'is_ai_recommended',
+
+        'cta_label',
+        'cta_url',
+        'cta_type',
+
         'thumbnail',
+
         'seo_title',
         'seo_description',
         'seo_keywords',
-        'og_title',
-        'og_description',
-        'og_image',
         'canonical_url',
+
+        'ai_view_count',
+        'ai_click_count',
+
         'is_active',
         'sort_order',
     ];
 
     protected $casts = [
+        'ai_keywords' => 'array',
+        'ai_intents' => 'array',
+        'ai_use_cases' => 'array',
+        'seo_keywords' => 'array',
+
+        'is_ai_visible' => 'boolean',
+        'is_ai_recommended' => 'boolean',
         'is_active' => 'boolean',
     ];
 

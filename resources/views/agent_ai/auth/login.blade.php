@@ -499,7 +499,7 @@
                     }, 400)
 
                     setTimeout(() => {
-                        window.location.href = '/dashboard'
+                        window.location.href = '/ai-agent/chat'
                     }, 1500)
                 })
                 .catch(err => {

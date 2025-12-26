@@ -29,7 +29,7 @@
             <!-- IMAGE / ANIMATION -->
             <div class="col-lg-6 text-center">
                 <img
-                    src="https://www.vice.com/wp-content/uploads/sites/2/2015/07/oFTHu7E.gif"
+                    src="{{ asset('cyber_gif.webp') }}"
                     alt="Cyber Threat Map"
                     style="
                         width:100%;
