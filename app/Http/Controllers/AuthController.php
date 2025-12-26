@@ -52,44 +52,116 @@ class AuthController extends Controller
 
     public function register(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'full_name' => 'required|string|max:150',
-            'username' => 'required|string|max:50|unique:users,username',
-            'phone_number' => 'required|string|max:20',
-            'email' => 'required|email|unique:users,email',
-            'password' => 'required|string|min:8',
-        ]);
+        $key = 'register:'.$request->ip();
+
+        if (RateLimiter::tooManyAttempts($key, 5)) {
+            return $this->fail(
+                'Terlalu banyak percobaan. Silakan tunggu beberapa saat.',
+                null,
+                429
+            );
+        }
+
+        RateLimiter::hit($key, 60);
+
+        $input = [
+            'full_name' => trim(strip_tags($request->full_name)),
+            'username' => trim(strtolower($request->username)),
+            'phone_number' => trim($request->phone_number),
+            'email' => trim(strtolower($request->email)),
+            'password' => $request->password,
+        ];
+
+        $validator = Validator::make(
+            $input,
+            [
+                'full_name' => 'required|string|min:3|max:150',
+                'username' => [
+                    'required',
+                    'string',
+                    'min:4',
+                    'max:50',
+                    'regex:/^[a-z0-9_]+$/',
+                    'unique:users,username',
+                ],
+                'phone_number' => [
+                    'required',
+                    'string',
+                    'max:20',
+                    'regex:/^08[0-9]{8,12}$/',
+                ],
+                'email' => 'required|email:rfc,dns|max:150|unique:users,email',
+                'password' => [
+                    'required',
+                    'string',
+                    'min:8',
+                    'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/',
+                ],
+            ],
+            [
+                'full_name.required' => 'Nama lengkap wajib diisi.',
+                'full_name.min' => 'Nama lengkap minimal 3 karakter.',
+                'full_name.max' => 'Nama lengkap maksimal 150 karakter.',
+
+                'username.required' => 'Username wajib diisi.',
+                'username.min' => 'Username minimal 4 karakter.',
+                'username.max' => 'Username maksimal 50 karakter.',
+                'username.regex' => 'Username hanya boleh huruf kecil, angka, dan underscore.',
+                'username.unique' => 'Username sudah digunakan.',
+
+                'phone_number.required' => 'Nomor WhatsApp wajib diisi.',
+                'phone_number.regex' => 'Format nomor WhatsApp tidak valid (contoh: 08xxxxxxxxxx).',
+
+                'email.required' => 'Alamat email wajib diisi.',
+                'email.email' => 'Format email tidak valid.',
+                'email.unique' => 'Alamat email sudah terdaftar.',
+
+                'password.required' => 'Kata sandi wajib diisi.',
+                'password.min' => 'Kata sandi minimal 8 karakter.',
+                'password.regex' => 'Kata sandi harus mengandung huruf besar, huruf kecil, dan angka.',
+            ]
+        );
 
         if ($validator->fails()) {
-            return $this->fail('Validation error', $validator->errors(), 422);
+            return $this->fail(
+                'Validasi gagal, periksa kembali data yang Anda masukkan.',
+                $validator->errors(),
+                422
+            );
         }
 
         DB::beginTransaction();
 
         try {
             $user = User::create([
-                'username' => $request->username,
-                'email' => $request->email,
-                'password' => Hash::make($request->password),
+                'username' => $input['username'],
+                'email' => $input['email'],
+                'password' => Hash::make($input['password']),
                 'role' => 'user',
                 'status' => 'active',
             ]);
 
             UserDetail::create([
                 'user_id' => $user->id,
-                'full_name' => $request->full_name,
-                'phone_number' => $request->phone_number,
+                'full_name' => $input['full_name'],
+                'phone_number' => $input['phone_number'],
             ]);
 
             DB::commit();
 
+            RateLimiter::clear($key);
+
             return $this->ok([
                 'redirect' => '/ai-agent/login',
-            ], 'Registrasi berhasil');
+            ], 'Registrasi berhasil. Silakan login.');
         } catch (\Throwable $e) {
             DB::rollBack();
 
-            return $this->fail('Registrasi gagal', null, 500);
+            return $this->fail(
+                'Terjadi kesalahan pada sistem. Silakan coba kembali.',
+                null,
+                500
+            );
         }
     }
 

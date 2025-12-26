@@ -272,13 +272,6 @@
                 <p class="text-gray-500 text-sm font-medium">Lengkapi data untuk otorisasi akses.</p>
             </div>
 
-            <!-- INFO BLOCK (VALIDATION ERROR) -->
-            <div id="form-alert"
-                class="hidden mb-6 rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-200">
-                <div class="font-semibold mb-1">Registrasi gagal</div>
-                <ul id="form-alert-list" class="list-disc list-inside space-y-1"></ul>
-            </div>
-
             <form onsubmit="handleRegister(event)" class="space-y-5">
 
                 <div class="group space-y-2">
@@ -332,12 +325,12 @@
                 <p class="text-xs text-gray-500 font-medium">
                     Sudah punya akses?
                     <a href="#"
-                        class="text-white font-bold hover:underline underline-offset-4 decoration-gray-600">Login
-                        Sekarang</a>
+                        class="text-white font-bold hover:underline underline-offset-4 decoration-gray-600">
+                        Login Sekarang
+                    </a>
                 </p>
             </div>
 
-            <!-- Footer Info -->
             <div class="mt-20 flex flex-col items-center md:items-start gap-4 opacity-30 pb-10">
                 <div class="h-px w-12 bg-white/20"></div>
                 <p class="text-[9px] font-black uppercase tracking-[0.4em] text-center md:text-left">
@@ -373,11 +366,37 @@
 
             const form = e.target
             const btn = document.getElementById('btn-register')
-            const alertBox = document.getElementById('form-alert')
-            const alertList = document.getElementById('form-alert-list')
 
-            alertBox.classList.add('hidden')
-            alertList.innerHTML = ''
+            const fullName = form.full_name.value.trim()
+            const username = form.username.value.trim()
+            const phone = form.phone_number.value.trim()
+            const email = form.email.value.trim()
+            const password = form.password.value
+
+            // ===== CLIENT SIDE VALIDATION =====
+            if (fullName.length < 3) {
+                return toast('error', 'Nama lengkap minimal 3 karakter.')
+            }
+
+            if (!/^[a-z0-9_]{4,50}$/.test(username)) {
+                return toast('error', 'Username hanya boleh huruf kecil, angka, dan underscore (min. 4 karakter).')
+            }
+
+            if (!/^08[0-9]{8,12}$/.test(phone)) {
+                return toast('error', 'Format nomor WhatsApp tidak valid.')
+            }
+
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                return toast('error', 'Format email tidak valid.')
+            }
+
+            if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/.test(password)) {
+                return toast(
+                    'error',
+                    'Kata sandi minimal 8 karakter dan harus mengandung huruf besar, huruf kecil, dan angka.'
+                )
+            }
+            // =================================
 
             btn.disabled = true
             btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Memproses...'
@@ -393,18 +412,8 @@
                     const res = err.response?.data
 
                     if (res?.errors) {
-                        alertBox.classList.remove('hidden')
-
                         Object.values(res.errors).flat().forEach(msg => {
-                            const li = document.createElement('li')
-                            li.textContent = msg
-                            alertList.appendChild(li)
                             toast('error', msg)
-                        })
-
-                        alertBox.scrollIntoView({
-                            behavior: 'smooth',
-                            block: 'center'
                         })
                     } else {
                         toast('error', res?.message || 'Registrasi gagal')
@@ -419,6 +428,7 @@
                 })
         }
     </script>
+
 
 </body>
 
