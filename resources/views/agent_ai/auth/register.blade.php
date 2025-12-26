@@ -251,7 +251,6 @@
         </div>
     </div>
 
-    <!-- Auth Container -->
     <div class="auth-container">
         <div class="scroll-container">
 
@@ -271,6 +270,13 @@
             <div class="mb-10 text-center md:text-left">
                 <h2 class="text-3xl font-bold tracking-tight mb-2">Registrasi</h2>
                 <p class="text-gray-500 text-sm font-medium">Lengkapi data untuk otorisasi akses.</p>
+            </div>
+
+            <!-- INFO BLOCK (VALIDATION ERROR) -->
+            <div id="form-alert"
+                class="hidden mb-6 rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+                <div class="font-semibold mb-1">Registrasi gagal</div>
+                <ul id="form-alert-list" class="list-disc list-inside space-y-1"></ul>
             </div>
 
             <form onsubmit="handleRegister(event)" class="space-y-5">
@@ -322,7 +328,6 @@
                 </div>
             </form>
 
-
             <div class="mt-10 text-center">
                 <p class="text-xs text-gray-500 font-medium">
                     Sudah punya akses?
@@ -345,15 +350,34 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <script>
         axios.defaults.headers.common['X-CSRF-TOKEN'] =
             document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+
+        function toast(type, message) {
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: type,
+                title: message,
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true
+            })
+        }
 
         function handleRegister(e) {
             e.preventDefault()
 
             const form = e.target
             const btn = document.getElementById('btn-register')
+            const alertBox = document.getElementById('form-alert')
+            const alertList = document.getElementById('form-alert-list')
+
+            alertBox.classList.add('hidden')
+            alertList.innerHTML = ''
 
             btn.disabled = true
             btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Memproses...'
@@ -362,18 +386,36 @@
 
             axios.post('/ai-agent/register', data)
                 .then(res => {
+                    toast('success', 'Registrasi berhasil')
                     window.location.href = res.data.data.redirect
                 })
                 .catch(err => {
-                    const msg = err.response?.data?.message || 'Registrasi gagal'
-                    alert(msg)
+                    const res = err.response?.data
+
+                    if (res?.errors) {
+                        alertBox.classList.remove('hidden')
+
+                        Object.values(res.errors).flat().forEach(msg => {
+                            const li = document.createElement('li')
+                            li.textContent = msg
+                            alertList.appendChild(li)
+                            toast('error', msg)
+                        })
+
+                        alertBox.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'center'
+                        })
+                    } else {
+                        toast('error', res?.message || 'Registrasi gagal')
+                    }
                 })
                 .finally(() => {
                     btn.disabled = false
                     btn.innerHTML = `
-                <span>Konfirmasi & Daftar</span>
-                <i class="fas fa-chevron-right text-[10px] opacity-50"></i>
-            `
+                    <span>Konfirmasi & Daftar</span>
+                    <i class="fas fa-chevron-right text-[10px] opacity-50"></i>
+                `
                 })
         }
     </script>
