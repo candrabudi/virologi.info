@@ -1,79 +1,58 @@
 <header class="header-one style-four top-transparent-header header--sticky">
-    {{-- <div class="header-top-area-wrapper">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-12">
-                    <div class="header-top-one-wrapper">
-                        <div class="right">
-                            <p>Are you ready to grow up your business? <a href="#">Contact Us <i
-                                        class="fa-solid fa-arrow-right"></i></a></p>
-                        </div>
-                        <div class="left">
-                            <div class="mail">
-                                <a href="mailto:webmaster@example.com"><i class="fal fa-envelope"></i>
-                                    support@invena.com</a>
-                            </div>
-                            <div class="mail">
-                                <a href="mailto:webmaster@example.com"><i class="fa-solid fa-phone-flip"></i>
-                                    Hotline: +210-8976569</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div> --}}
     <div class="header-main">
         <div class="container">
             <div class="row">
                 <div class="col-lg-12">
                     <div class="header-main-one-wrapper">
+
+                        <!-- LOGO -->
                         <div class="thumbnail">
-                            <a href="#">
-                                <img src="{{ $setting ? $setting->logo_rectangle : asset('logo.png')  }}" alt="finbiz-logo" style="max-width: 180px;">
+                            <a href="/" aria-label="Homepage">
+                                <img
+                                    src="{{ $setting?->logo_rectangle_webp ?? asset('logo-180.webp') }}"
+                                    width="180"
+                                    height="59"
+                                    alt="Finbiz Logo"
+                                    fetchpriority="high"
+                                    decoding="async"
+                                    style="max-width:180px; height:auto;"
+                                >
                             </a>
                         </div>
+
                         <div class="main-header">
-                            <div class="nav-area">
-                                <ul class="">
-                                    <li class="main-nav project-a-after">
-                                        <a href="/">Beranda</a>
-                                    </li>
-                                    <li class="main-nav project-a-after">
-                                        <a href="/about-us">Tentang Kami</a>
-                                    </li>
-                                    <li class="main-nav project-a-after">
-                                        <a href="#">Produk</a>
-                                    </li>
-                                    <li class="main-nav project-a-after">
-                                        <a href="#">Layanan</a>
-                                    </li>
-                                    <li class="main-nav project-a-after">
-                                        <a href="#">E-Book</a>
-                                    </li>
-                                    <li class="main-nav project-a-after">
-                                        <a href="/blog">Artikel</a>
-                                    </li>
-                                    <li class="main-nav project-a-after">
-                                        <a href="#">Agent AI</a>
-                                    </li>
+                            <!-- NAV -->
+                            <nav class="nav-area" aria-label="Main Navigation">
+                                <ul>
+                                    <li class="main-nav"><a href="/">Beranda</a></li>
+                                    <li class="main-nav"><a href="/about-us">Tentang Kami</a></li>
+                                    <li class="main-nav"><a href="#">Produk</a></li>
+                                    <li class="main-nav"><a href="#">Layanan</a></li>
+                                    <li class="main-nav"><a href="#">E-Book</a></li>
+                                    <li class="main-nav"><a href="/blog">Artikel</a></li>
+                                    <li class="main-nav"><a href="#">Agent AI</a></li>
                                 </ul>
-                            </div>
+                            </nav>
 
-
-                            <div class="loader-wrapper">
-                                <div class="loader">
-                                </div>
-                                <div class="loader-section section-left"></div>
-                                <div class="loader-section section-right"></div>
-                            </div>
+                            <!-- CTA + MOBILE MENU -->
                             <div class="button-area">
                                 <a href="#"
-                                    class="rts-btn btn-primary ml--20 ml_sm--5 header-one-btn quote-btn">Kontak Kami</a>
-                                <button id="menu-btn" class="menu menu-btn ml--20 ml_sm--5">
-                                    <img class="menu-light" src="{{ asset('assets/images/icons/01.svg') }}" alt="Menu-icon">
+                                   class="rts-btn btn-primary ml--20 ml_sm--5 header-one-btn quote-btn">
+                                    Kontak Kami
+                                </a>
+
+                                <button id="menu-btn"
+                                        class="menu menu-btn ml--20 ml_sm--5"
+                                        aria-label="Open Menu">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                        <path d="M3 6h18M3 12h18M3 18h18"
+                                              stroke="currentColor"
+                                              stroke-width="2"
+                                              stroke-linecap="round"/>
+                                    </svg>
                                 </button>
                             </div>
+
                         </div>
                     </div>
                 </div>
