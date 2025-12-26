@@ -6,8 +6,7 @@
 
     .video-bg-container video {
         position: absolute;
-        top: 0;
-        left: 0;
+        inset: 0;
         width: 100%;
         height: 100%;
         object-fit: cover;
@@ -18,7 +17,6 @@
         position: absolute;
         inset: 0;
         background: rgba(0, 0, 0, 0.45);
-        /* gelapkan latar */
         z-index: 1;
     }
 
@@ -27,32 +25,52 @@
         z-index: 2;
     }
 </style>
+
 <div class="rts-banner-ten-area banner-bg_12 rts-section-gap video-bg-container">
-    <video autoplay muted loop playsinline>
-        <source src="{{ asset('video_background.mp4') }}" type="video/mp4">
+
+    {{-- VIDEO (LAZY LOAD ONLY) --}}
+    <video
+        class="lazy-video"
+        autoplay
+        muted
+        loop
+        playsinline
+        preload="none"
+    >
+        <source data-src="{{ asset('video_background.mp4') }}" type="video/mp4">
     </video>
+
     <div class="video-bg-overlay"></div>
+
     <div class="container video-bg-content">
         <div class="row">
             <div class="col-lg-12">
                 <div class="banner-inner-content-12">
                     <p class="pre">
-                        <img src="assets/images/banner/icon/01.svg" alt="">
-                        {{ $hero ? $hero->pre_title : 'Virologi' }}
+                        <img
+                            src="{{ asset('assets/images/banner/icon/01.svg') }}"
+                            alt=""
+                            loading="lazy"
+                            decoding="async"
+                        >
+                        {{ $hero?->pre_title ?? 'Virologi' }}
                     </p>
 
                     <h1 class="title rts-text-anime-style-1">
-                        {{ $hero ? $hero->title : 'Membangun Dunia Lebih Aman<br> dengan Siber & AI' }}
+                        {!! $hero?->title ?? 'Membangun Dunia Lebih Aman<br>dengan Siber & AI' !!}
                     </h1>
 
                     <p class="disc">
-                       {{ $hero ? $hero->subtitle : 'Bagaimana kita membuat dunia digital ini lebih aman dengan siber teknologi tinggi dan AI yang
-                        dipandu dengan para techie-expert' }}
+                        {{ $hero?->subtitle ?? 'Bagaimana kita membuat dunia digital ini lebih aman dengan siber teknologi tinggi dan AI.' }}
                     </p>
 
                     <div class="button-wrapper">
-                        <a href="{{ $hero ? $hero->primary_button_url : '#' }}" class="rts-btn btn-primary btn-white">{{ $hero ? $hero->primary_button_text : 'View Live Threat Map' }}</a>
-                        <a href="{{ $hero ? $hero->secondary_button_url : '#' }}" class="rts-btn btn-primary btn-border">{{ $hero ? $hero->secondary_button_text : 'Ngobrol Dengan Ahlinya' }} </a>
+                        <a href="{{ $hero?->primary_button_url ?? '#' }}" class="rts-btn btn-primary btn-white">
+                            {{ $hero?->primary_button_text ?? 'View Live Threat Map' }}
+                        </a>
+                        <a href="{{ $hero?->secondary_button_url ?? '#' }}" class="rts-btn btn-primary btn-border">
+                            {{ $hero?->secondary_button_text ?? 'Ngobrol Dengan Ahlinya' }}
+                        </a>
                     </div>
                 </div>
             </div>
@@ -60,3 +78,36 @@
     </div>
 
 </div>
+
+{{-- LAZY VIDEO SCRIPT --}}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const videos = document.querySelectorAll('video.lazy-video');
+
+    if (!('IntersectionObserver' in window)) {
+        videos.forEach(loadVideo);
+        return;
+    }
+
+    const observer = new IntersectionObserver((entries, obs) => {
+        entries.forEach(entry => {
+            if (!entry.isIntersecting) return;
+
+            loadVideo(entry.target);
+            obs.unobserve(entry.target);
+        });
+    }, {
+        rootMargin: '200px'
+    });
+
+    videos.forEach(video => observer.observe(video));
+
+    function loadVideo(video) {
+        const source = video.querySelector('source[data-src]');
+        if (!source) return;
+
+        source.src = source.dataset.src;
+        video.load();
+    }
+});
+</script>
