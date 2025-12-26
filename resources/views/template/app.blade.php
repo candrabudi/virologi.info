@@ -203,10 +203,8 @@
         </svg>
     </div>
 
-    <script defer src="{{ asset('assets/js/plugins/jquery.js') }}">
-        < /cript> <
-        script defer src = "{{ asset('assets/js/plugins/odometer.js') }}" >
-    </script>
+    <script defer src="{{ asset('assets/js/plugins/jquery.js') }}"></script>
+    <script defer src="{{ asset('assets/js/plugins/odometer.js') }}"></script>
     <script defer src="{{ asset('assets/js/plugins/jquery-appear.js') }}"></script>
     <script defer src="{{ asset('assets/js/plugins/gsap.js') }}"></script>
     <script defer src="{{ asset('assets/js/plugins/split-text.js') }}"></script>
@@ -218,6 +216,7 @@
     <script defer src="{{ asset('assets/js/plugins/swiper.js') }}"></script>
     <script defer src="{{ asset('assets/js/plugins/contact.form.js') }}"></script>
     <script defer src="{{ asset('assets/js/main.js') }}"></script>
+
 
     @stack('scripts')
 
