@@ -18,8 +18,7 @@
                     </p>
 
                     <div class="button-wrapper">
-                        <a href="{{ $threatmap->cta_url ?? '#' }}"
-                           class="rts-btn btn-primary btn-white">
+                        <a href="{{ $threatmap->cta_url ?? '#' }}" class="rts-btn btn-primary btn-white">
                             {{ $threatmap->cta_text ?? 'View Live Threat Map' }}
                         </a>
                     </div>
@@ -28,21 +27,9 @@
 
             <!-- IMAGE -->
             <div class="col-lg-6 text-center">
-                <img
-                    src="{{ asset('cyber_gif_720.webp') }}"
-                    srcset="
-                        {{ asset('cyber_gif_360.webp') }} 360w,
-                        {{ asset('cyber_gif_480.webp') }} 480w,
-                        {{ asset('cyber_gif_720.webp') }} 720w
-                    "
-                    sizes="(max-width: 768px) 90vw, 720px"
-                    width="720"
-                    height="408"
-                    alt="Cyber Threat Map"
-                    fetchpriority="high"
-                    decoding="async"
-                    style="width:100%; height:auto;"
-                >
+                <img src="{{ asset('cyber_gif.webp') }}" width="720" height="408" alt="Cyber Threat Map"
+                    fetchpriority="high" decoding="async" style="width:100%; height:auto;">
+
             </div>
 
         </div>
