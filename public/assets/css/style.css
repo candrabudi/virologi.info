@@ -9156,7 +9156,7 @@ header.header--sticky.sticky .nav-area ul li.main-nav {
 
 .banner-bg_12 {
   height: 900px;
-  background-image: url(../images/banner/13.webp);
+  /* background-image: url(../images/banner/13.webp); */
   display: flex;
   align-items: center;
 }
