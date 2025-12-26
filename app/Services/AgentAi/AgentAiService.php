@@ -7,7 +7,6 @@ use App\Models\AiChatSession;
 use App\Models\AiSetting;
 use App\Models\AiUsageLog;
 use App\Services\AiLanguageTrainerService;
-use Illuminate\Support\Str;
 
 class AgentAiService
 {
@@ -26,10 +25,18 @@ class AgentAiService
 
     public function handleMessage(int $userId, string $promptRaw, ?string $sessionToken = null): array
     {
+        if (!$sessionToken) {
+            throw new \RuntimeException('Session token required');
+        }
+
         $scopeCode = 'cybersecurity';
 
         $setting = AiSetting::where('is_active', true)->firstOrFail();
-        $session = $this->resolveSession($userId, $sessionToken, $setting, $scopeCode);
+
+        $session = AiChatSession::where('session_token', $sessionToken)
+            ->where('user_id', $userId)
+            ->where('is_active', true)
+            ->firstOrFail();
 
         $normalized = $this->normalizer->normalizeWithMeta($promptRaw, $scopeCode);
 
@@ -44,34 +51,40 @@ class AgentAiService
 
         $validScope = $this->scopeGate->passes($scopeCode, $prompt);
 
+        AiChatMessage::create([
+            'session_id' => $session->id,
+            'role' => 'user',
+            'content' => $promptRaw,
+        ]);
+
+        $this->maybeGenerateTitle(
+            $session->id,
+            $setting,
+            $promptRaw,
+            $languageCode
+        );
+
         if (!$validScope) {
             $systemPrompt = $this->promptResolver->resolve([
-                'type' => 'out_of_scope_strict',
                 'scope' => $scopeCode,
+                'intent' => $intentCode,
+                'behavior' => 'soft_out_of_scope',
                 'language' => $languageCode,
-                'original_prompt' => $promptRaw,
             ]);
 
             [$assistant, $usage] = $this->llm->chat($session, $setting, $systemPrompt);
 
             $this->saveAssistant($session->id, $assistant);
             $this->touchSession($session->id);
-
-            $this->logUsage(true, 'out_of_scope', $setting, $usage);
+            $this->logUsage(false, 'soft_out_of_scope', $setting, $usage);
 
             return [
                 $session->session_token,
                 $assistant,
-                403,
-                $this->meta('out_of_scope', 'none', 0, $languageCode),
+                200,
+                $this->meta('soft_out_of_scope', 'none', 0, $languageCode),
             ];
         }
-
-        AiChatMessage::create([
-            'session_id' => $session->id,
-            'role' => 'user',
-            'content' => $promptRaw,
-        ]);
 
         [$resourceType, $resources] = $this->resourceResolver->resolve(
             $scopeCode,
@@ -178,30 +191,34 @@ class AgentAiService
         ];
     }
 
-    private function resolveSession(int $userId, ?string $token, AiSetting $setting, string $scope): AiChatSession
-    {
-        if ($token) {
-            $existing = AiChatSession::where('session_token', $token)
-                ->where('user_id', $userId)
-                ->where('is_active', true)
-                ->first();
+    private function maybeGenerateTitle(
+        int $sessionId,
+        AiSetting $setting,
+        string $promptRaw,
+        string $languageCode
+    ): void {
+        $currentTitle = AiChatSession::where('id', $sessionId)->value('title');
 
-            if ($existing) {
-                return $existing;
-            }
+        if ($currentTitle !== 'Percakapan Baru') {
+            return;
         }
 
-        return AiChatSession::create([
-            'user_id' => $userId,
-            'scope_code' => $scope,
-            'session_token' => (string) Str::uuid(),
-            'title' => 'Percakapan Baru',
-            'model' => $setting->model,
-            'ip_address' => request()->ip(),
-            'user_agent' => substr((string) request()->userAgent(), 0, 255),
-            'last_activity_at' => now(),
-            'is_active' => true,
-        ]);
+        $title = $this->titleGen->generateFromUserPrompt(
+            AiChatSession::findOrFail($sessionId),
+            $setting,
+            $promptRaw,
+            $languageCode
+        );
+
+        if (!is_string($title) || trim($title) === '') {
+            return;
+        }
+
+        AiChatSession::where('id', $sessionId)
+            ->where('title', 'Percakapan Baru')
+            ->update([
+                'title' => mb_strimwidth(trim($title), 0, 80),
+            ]);
     }
 
     private function saveAssistant(int $sessionId, string $content): void
@@ -242,7 +259,7 @@ class AgentAiService
             'total_tokens' => (int) ($usage['total_tokens'] ?? 0),
             'ip_address' => request()->ip(),
             'user_agent' => substr((string) request()->userAgent(), 0, 255),
-            'is_blocked' => $blocked,
+            'is_blocked' => false,
             'block_reason' => $reason,
         ]);
     }

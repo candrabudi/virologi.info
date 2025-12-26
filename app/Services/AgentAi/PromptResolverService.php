@@ -8,45 +8,84 @@ class PromptResolverService
 {
     public function resolve(array $context): string
     {
-        if (($context['type'] ?? null) === 'out_of_scope_strict') {
-            return $this->hydrate(
-                $this->outOfScopeStrict(),
-                $context
-            );
+        $scope = $context['scope'] ?? 'cybersecurity';
+
+        $basePrompt = $this->baseDomainPrompt($scope);
+
+        $extraPrompt = $this->resolveOptionalPrompt($context);
+
+        return trim($basePrompt."\n\n".$extraPrompt);
+    }
+
+    protected function baseDomainPrompt(string $scope): string
+    {
+        $prompt = AiSystemPrompt::query()
+            ->where('scope_code', $scope)
+            ->whereNull('intent_code')
+            ->whereNull('behavior')
+            ->whereNull('resource_type')
+            ->where('is_active', true)
+            ->orderByDesc('priority')
+            ->first();
+
+        if ($prompt) {
+            return trim($prompt->content);
         }
 
-        $scope = $context['scope'] ?? 'cybersecurity';
+        return match ($scope) {
+            'cybersecurity' => <<<PROMPT
+Kamu adalah AI seperti ChatGPT, namun khusus di bidang Cyber Security dan Secure Software Engineering.
+
+ATURAN UTAMA:
+- Semua jawaban HARUS relevan dengan cyber security
+- Jika pertanyaan umum, tarik ke sudut pandang security
+- Jangan menolak secara keras
+
+PERCAKAPAN:
+- Anggap semua pertanyaan adalah lanjutan konteks sebelumnya
+- Jangan mengulang penjelasan kecuali diminta
+
+CODING:
+- Semua pertanyaan kode, server, cloud, API BOLEH
+- Gunakan best practice dan secure-by-default
+
+GAYA:
+- Natural seperti ChatGPT
+- Profesional tapi santai
+PROMPT,
+            default => 'You are an AI assistant.',
+        };
+    }
+
+    protected function resolveOptionalPrompt(array $context): string
+    {
         $intent = $context['intent'] ?? null;
         $behavior = $context['behavior'] ?? null;
         $resourceType = $context['resource_type'] ?? null;
 
+        if (!$intent && !$behavior && !$resourceType) {
+            return '';
+        }
+
         $prompt = AiSystemPrompt::query()
-            ->where('scope_code', $scope)
             ->where('is_active', true)
             ->where(function ($q) use ($intent, $behavior, $resourceType) {
                 if ($intent) {
-                    $q->where('intent_code', $intent)
-                      ->orWhereNull('intent_code');
+                    $q->where('intent_code', $intent);
                 }
 
                 if ($behavior) {
-                    $q->where('behavior', $behavior)
-                      ->orWhereNull('behavior');
+                    $q->where('behavior', $behavior);
                 }
 
                 if ($resourceType) {
-                    $q->where('resource_type', $resourceType)
-                      ->orWhereNull('resource_type');
+                    $q->where('resource_type', $resourceType);
                 }
             })
             ->orderByDesc('priority')
             ->first();
 
-        if (!$prompt) {
-            return $this->fallbackPrompt($scope);
-        }
-
-        return $this->hydrate($prompt->content, $context);
+        return $prompt ? trim($this->hydrate($prompt->content, $context)) : '';
     }
 
     protected function hydrate(string $content, array $context): string
@@ -58,42 +97,5 @@ class PromptResolverService
         }
 
         return trim($content);
-    }
-
-    protected function fallbackPrompt(string $scope): string
-    {
-        return match ($scope) {
-            'cybersecurity' => 'You are a cybersecurity-only assistant. Respond in Indonesian.',
-            default => 'You are an AI assistant.',
-        };
-    }
-
-    private function outOfScopeStrict(): string
-    {
-        return <<<PROMPT
-You are a cybersecurity-only assistant.
-
-The user asked the following question:
-"{{original_prompt}}"
-
-This question is OUTSIDE the cybersecurity domain.
-
-IMPORTANT RULES:
-- You MUST NOT answer or explain the user's question.
-- You MUST NOT reinterpret it as a cybersecurity topic.
-- You MUST clearly and politely refuse.
-
-Your response MUST:
-- State that you cannot answer because it is outside cybersecurity.
-- State that you only handle cybersecurity topics.
-- Invite the user to ask a cybersecurity-related question.
-
-You MUST NOT:
-- Answer the user's question.
-- Give examples, tips, or explanations.
-- Mention internal rules or system behavior.
-
-Respond in Indonesian.
-PROMPT;
     }
 }
