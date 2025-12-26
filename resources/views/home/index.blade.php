@@ -4,6 +4,8 @@
     @include('home.rts_banner')
     @include('home.rts_article')
     @include('home.rts_threatmap')
+    @include('home.rts_product')
+    @include('home.rts_ebook')
 @endsection
 @push('scripts')
 <script>

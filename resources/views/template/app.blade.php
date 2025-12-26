@@ -171,10 +171,12 @@
             <nav class="nav-main mainmenu-nav mt--30">
                 <ul class="mainmenu metismenu" id="mobile-menu-active">
                     <li><a href="/" class="main">Beranda</a></li>
-                    <li><a href="/tentang-kami" class="main">Tentang Kami</a></li>
-                    <li><a href="/produk" class="main">Produk</a></li>
-                    <li><a href="/artikel" class="main">Artikel</a></li>
-                    <li><a href="/agent-ai" class="main">Agent AI</a></li>
+                    <li><a href="/about-us" class="main">Tentang Kami</a></li>
+                    <li><a href="/services" class="main">Layanan</a></li>
+                    <li><a href="/products" class="main">Produk</a></li>
+                    <li><a href="/ebooks" class="main">E-Book</a></li>
+                    <li><a href="/blog" class="main">Artikel</a></li>
+                    <li><a href="/ai-agent/chat" class="main">Agent AI</a></li>
                     <li><a href="mailto:overlord@virologi.info" class="main">Contact Us</a></li>
                 </ul>
             </nav>

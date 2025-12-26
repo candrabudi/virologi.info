@@ -4,7 +4,10 @@ use App\Http\Controllers\AboutUsController;
 use App\Http\Controllers\AgentAiController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BlogController;
+use App\Http\Controllers\CyberSecurityServiceController;
+use App\Http\Controllers\EbookController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\ProductController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -20,12 +23,36 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'index']);
 Route::get('/home/latest-articles', [HomeController::class, 'latestArticles']);
+Route::get('/fetch/homepage-products', [HomeController::class, 'homepageProducts']);
+Route::get('/fetch/homepage-ebooks', [HomeController::class, 'homepageEbooks']);
+
+Route::get('/products', [ProductController::class, 'index']);
+Route::get('/products/{slug}', [ProductController::class, 'show']);
+
+Route::get('/api/products', [ProductController::class, 'apiIndex']);
+Route::get('/api/products/types', [ProductController::class, 'apiTypes']);
+Route::get('/api/products/domains', [ProductController::class, 'apiDomains']);
+Route::get('/api/products/recent', [ProductController::class, 'apiRecent']);
+Route::post('/api/products/{id}/click', [ProductController::class, 'apiTrackClick']);
+
+Route::get('/ebooks', [EbookController::class, 'index']);
+Route::get('/ebooks/{slug}', [EbookController::class, 'show']);
+
+Route::get('/api/ebooks', [EbookController::class, 'apiIndex']);
+Route::get('/api/ebooks/levels', [EbookController::class, 'apiLevels']);
+Route::get('/api/ebooks/topics', [EbookController::class, 'apiTopics']);
+Route::get('/api/ebooks/recent', [EbookController::class, 'apiRecent']);
+
+Route::get('/services', [CyberSecurityServiceController::class, 'index']);
+Route::get('/services/{slug}', [CyberSecurityServiceController::class, 'show']);
+
+Route::get('/api/services', [CyberSecurityServiceController::class, 'apiIndex']);
+Route::get('/api/services/categories', [CyberSecurityServiceController::class, 'apiCategories']);
+Route::get('/api/services/recent', [CyberSecurityServiceController::class, 'apiRecent']);
+
 Route::get('/about-us', [AboutUsController::class, 'index']);
 Route::get('/blog', [BlogController::class, 'index']);
 Route::get('/blog/{slug}', [BlogController::class, 'detail']);
-Route::get('/products', function () {
-    return view('products.index');
-});
 
 Route::get('/threat-map', function () {
     return view('raven');
