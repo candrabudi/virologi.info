@@ -18,7 +18,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     {{-- <link rel="shortcut icon" type="image/x-icon" href="{{ asset('assets/images/fav.png') }}"> --}}
     <title>@yield('title') | {{ $setting ? $setting->name : 'Default' }}</title>
-
+    @stack('meta')
     <link rel="stylesheet preload" href="{{ asset('assets/css/plugins/fontawesome.css') }}" as="style">
     <link rel="stylesheet preload" href="{{ asset('assets/css/plugins/swiper.css') }}" as="style">
     <link rel="stylesheet preload" href="{{ asset('assets/css/plugins/metismenu.css') }}" as="style">

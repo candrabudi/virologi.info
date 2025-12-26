@@ -39,7 +39,6 @@
 @endsection
 
 @push('scripts')
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script>
         let currentPage = 1
 
@@ -47,55 +46,73 @@
             loadArticles()
         })
 
-        function loadArticles(page = 1) {
-            currentPage = page
-            const params = new URLSearchParams(window.location.search)
-            params.set('page', page)
+        async function loadArticles(page = 1) {
+            try {
+                currentPage = page
 
-            axios.get('/api/articles?' + params.toString())
-                .then(res => {
-                    renderArticles(res.data.data)
-                    renderPagination(res.data.meta)
-                    window.scrollTo({
-                        top: 0,
-                        behavior: 'smooth'
-                    })
+                const params = new URLSearchParams(window.location.search)
+                params.set('page', page)
+
+                const res = await fetch('/api/articles?' + params.toString())
+                if (!res.ok) throw new Error('Failed load articles')
+
+                const json = await res.json()
+
+                renderArticles(json.data)
+                renderPagination(json.meta)
+
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
                 })
+            } catch (err) {
+                console.error(err)
+            }
         }
 
         function renderArticles(articles) {
             const el = document.getElementById('blogGrid')
             el.innerHTML = ''
 
+            if (!Array.isArray(articles) || articles.length === 0) {
+                el.innerHTML = `
+            <div class="col-12 text-center text-muted py-5">
+                Tidak ada artikel ditemukan
+            </div>
+        `
+                return
+            }
+
             articles.forEach((article, index) => {
-                el.innerHTML += `
-        <div class="col-lg-6 col-md-6 col-sm-12"
-            data-animation="fadeInUp"
-            data-delay="0.${index + 1}"
-            style="transform: translate(0px, 0px); opacity: 1;">
+                el.insertAdjacentHTML('beforeend', `
+            <div class="col-lg-6 col-md-6 col-sm-12"
+                data-animation="fadeInUp"
+                data-delay="0.${index + 1}"
+                style="transform: translate(0px, 0px); opacity: 1;">
 
-            <div class="single-blog-area-one column-reverse">
-                <p>
-                    ${article.categories[0] ?? 'Artikel'} /
-                    <span>virologi.info</span>
-                </p>
+                <div class="single-blog-area-one column-reverse">
+                    <p>
+                        ${article.categories?.[0] ?? 'Artikel'} /
+                        <span>virologi.info</span>
+                    </p>
 
-                <a href="/blog/${article.slug}">
-                    <h4 class="title">${article.title}</h4>
-                </a>
-
-                <div class="bottom-details">
-                    <a href="/blog/${article.slug}" class="thumbnail">
-                        <img
-                            src="${article.thumbnail ?? '/assets/images/blog/default.jpg'}"
-                            alt="${article.title}"
-                            style="width:100%; height:220px; object-fit:cover;"
-                        >
+                    <a href="/blog/${article.slug}">
+                        <h4 class="title">${article.title}</h4>
                     </a>
+
+                    <div class="bottom-details">
+                        <a href="/blog/${article.slug}" class="thumbnail">
+                            <img
+                                src="${article.thumbnail ?? '/assets/images/blog/default.jpg'}"
+                                alt="${article.title}"
+                                loading="lazy"
+                                style="width:100%; height:220px; object-fit:cover;"
+                            >
+                        </a>
+                    </div>
                 </div>
             </div>
-        </div>
-        `
+        `)
             })
         }
 
@@ -103,21 +120,24 @@
             const el = document.getElementById('pagination')
             el.innerHTML = ''
 
+            if (!meta || meta.last_page <= 1) return
+
             for (let i = 1; i <= meta.last_page; i++) {
-                el.innerHTML += `
-            <button class="${i === meta.current_page ? 'active' : ''}"
+                el.insertAdjacentHTML('beforeend', `
+            <button
+                class="${i === meta.current_page ? 'active' : ''}"
                 onclick="loadArticles(${i})">
                 ${String(i).padStart(2, '0')}
             </button>
-        `
+        `)
             }
 
             if (meta.current_page < meta.last_page) {
-                el.innerHTML += `
+                el.insertAdjacentHTML('beforeend', `
             <button onclick="loadArticles(${meta.current_page + 1})">
                 <i class="fal fa-angle-double-right"></i>
             </button>
-        `
+        `)
             }
         }
     </script>

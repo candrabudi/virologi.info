@@ -13,9 +13,11 @@
         * {
             box-sizing: border-box
         }
+
         .panel.mobile-attacks {
             display: none;
         }
+
         :root {
             --bg: #070b14;
             --panel: #0b1220;
@@ -895,8 +897,29 @@
         <div class="shell">
             <aside class="panel">
                 <div class="panelInner">
-                    <div class="panelTitle">RECENT DAILY ATTACKS <small>Last 14 days</small></div>
+
+                    <!-- HOME BUTTON -->
+                    <a href="/"
+                        style="
+                display:block;
+                margin-bottom:12px;
+                padding:8px 12px;
+                border:1px solid rgba(255,255,255,.3);
+                border-radius:6px;
+                text-align:center;
+                font-size:13px;
+                text-decoration:none;
+                color:#fff;
+           ">
+                        ← Home
+                    </a>
+
+                    <div class="panelTitle">
+                        RECENT DAILY ATTACKS <small>Last 14 days</small>
+                    </div>
+
                     <div class="divider"></div>
+
                     <div class="canvasWrap">
                         <canvas id="miniChart" width="600" height="240"></canvas>
                     </div>
@@ -912,12 +935,15 @@
                             </span>
                         </div>
                     </div>
+
                     <div class="map-zoom">
                         <button id="zoomIn">＋</button>
                         <button id="zoomOut">－</button>
                         <button id="zoomReset">⟳</button>
                     </div>
+
                     <div id="attackdiv"></div>
+
                 </div>
             </aside>
 
