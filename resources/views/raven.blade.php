@@ -958,6 +958,23 @@
 
             <div class="panel mobile-attacks">
                 <div class="panelInner">
+
+                    <!-- HOME BUTTON -->
+                    <a href="/"
+                        style="
+                display:block;
+                margin-bottom:10px;
+                padding:8px 12px;
+                border:1px solid rgba(255,255,255,.3);
+                border-radius:6px;
+                text-align:center;
+                font-size:13px;
+                text-decoration:none;
+                color:#fff;
+           ">
+                        ← Home
+                    </a>
+
                     <div class="panelTitle">
                         <span>Recent Attacks</span>
                         <small>Live</small>
@@ -966,8 +983,10 @@
                     <div class="divider"></div>
 
                     <div id="attackdiv-mobile"></div>
+
                 </div>
             </div>
+
 
 
             <aside class="panel">
