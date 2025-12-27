@@ -31,7 +31,7 @@
     <link
         href="{{ asset('fonts.googleapis.com/css2fadf.css') }}?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Red+Hat+Display:ital,wght@0,300..900;1,300..900&display=swap"
         rel="stylesheet preload" as="style">
-    <link rel="stylesheet preload" href="{{ asset('assets/css/style.css') }}" as="style">
+    <link rel="stylesheet preload" href="{{ asset('assets/css/style_version.css') }}" as="style">
 </head>
 
 <body>
