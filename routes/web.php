@@ -7,6 +7,7 @@ use App\Http\Controllers\BlogController;
 use App\Http\Controllers\CyberSecurityServiceController;
 use App\Http\Controllers\EbookController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\PdfController;
 use App\Http\Controllers\ProductController;
 use Illuminate\Support\Facades\Route;
 
@@ -25,6 +26,7 @@ Route::get('/', [HomeController::class, 'index']);
 Route::get('/home/latest-articles', [HomeController::class, 'latestArticles']);
 Route::get('/fetch/homepage-products', [HomeController::class, 'homepageProducts']);
 Route::get('/fetch/homepage-ebooks', [HomeController::class, 'homepageEbooks']);
+Route::get('/pdf-proxy', [PdfController::class, 'proxyPdf'])->name('pdf.proxy');
 
 Route::get('/products', [ProductController::class, 'index']);
 Route::get('/products/{slug}', [ProductController::class, 'show']);
