@@ -37,6 +37,7 @@ Route::post('/api/products/{id}/click', [ProductController::class, 'apiTrackClic
 
 Route::get('/ebooks', [EbookController::class, 'index']);
 Route::get('/ebooks/{slug}', [EbookController::class, 'show']);
+Route::get('/ebooks/{slug}/read', [EbookController::class, 'read']);
 
 Route::get('/api/ebooks', [EbookController::class, 'apiIndex']);
 Route::get('/api/ebooks/levels', [EbookController::class, 'apiLevels']);

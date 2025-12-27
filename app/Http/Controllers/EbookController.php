@@ -8,19 +8,11 @@ use Illuminate\Http\Request;
 
 class EbookController extends Controller
 {
-    /* =========================
-       EBOOK LIST PAGE
-       /ebooks
-    ========================== */
     public function index()
     {
         return view('ebooks.index');
     }
 
-    /* =========================
-       EBOOK DETAIL PAGE
-       /ebooks/{slug}
-    ========================== */
     public function show(string $slug)
     {
         $ebook = Ebook::query()
@@ -31,10 +23,16 @@ class EbookController extends Controller
         return view('ebooks.show', compact('ebook'));
     }
 
-    /* =========================
-       API: EBOOK LIST (PAGINATED)
-       /api/ebooks
-    ========================== */
+    public function read(string $slug)
+    {
+        $ebook = Ebook::query()
+            ->where('slug', $slug)
+            ->where('is_active', true)
+            ->firstOrFail();
+
+        return view('ebooks.read', compact('ebook'));
+    }
+
     public function apiIndex(Request $request): JsonResponse
     {
         $query = Ebook::query()
@@ -74,10 +72,6 @@ class EbookController extends Controller
         ]);
     }
 
-    /* =========================
-       API: EBOOK LEVELS
-       /api/ebooks/levels
-    ========================== */
     public function apiLevels(): JsonResponse
     {
         $levels = Ebook::query()
@@ -92,10 +86,6 @@ class EbookController extends Controller
         ]);
     }
 
-    /* =========================
-       API: EBOOK TOPICS
-       /api/ebooks/topics
-    ========================== */
     public function apiTopics(): JsonResponse
     {
         $topics = Ebook::query()
@@ -110,10 +100,6 @@ class EbookController extends Controller
         ]);
     }
 
-    /* =========================
-       API: RECENT EBOOKS
-       /api/ebooks/recent
-    ========================== */
     public function apiRecent(): JsonResponse
     {
         $ebooks = Ebook::query()

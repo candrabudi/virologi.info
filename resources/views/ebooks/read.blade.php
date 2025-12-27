@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="id">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -10,12 +9,12 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
-
+        
         :root {
             --sidebar-width: 280px;
         }
 
-        body {
+        body { 
             font-family: 'Plus Jakarta Sans', sans-serif;
             background-color: #ffffff;
             -webkit-tap-highlight-color: transparent;
@@ -55,7 +54,6 @@
                 transform: translateX(-100%);
                 transition: transform 0.3s ease-in-out;
             }
-
             .sidebar-open #sidebar {
                 transform: translateX(0);
             }
@@ -74,18 +72,11 @@
         }
 
         /* Clean Scrollbar */
-        ::-webkit-scrollbar {
-            width: 4px;
-            height: 4px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        ::-webkit-scrollbar-thumb {
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { 
             background: #e2e8f0;
-            border-radius: 0;
+            border-radius: 0; 
         }
 
         /* Active State - No Animation */
@@ -103,36 +94,22 @@
             height: 28px;
             animation: spin 1s linear infinite;
         }
-
-        @keyframes spin {
-            0% {
-                transform: rotate(0deg);
-            }
-
-            100% {
-                transform: rotate(360deg);
-            }
-        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
         /* No Hover Animations - Pure Professional */
-        button,
-        div,
-        i {
+        button, div, i {
             transition: none !important;
             transform: none !important;
             animation: none !important;
         }
-
-        .loader {
-            animation: spin 1s linear infinite !important;
-        }
+        
+        .loader { animation: spin 1s linear infinite !important; }
     </style>
 </head>
-
 <body class="h-screen overflow-hidden text-slate-800 sidebar-open">
 
     <div class="flex h-full w-full layout-container">
-
+        
         <!-- SIDEBAR -->
         <aside id="sidebar">
             <div class="h-full flex flex-col">
@@ -145,7 +122,7 @@
                         <i data-lucide="x" class="w-4 h-4"></i>
                     </button>
                 </div>
-
+                
                 <div id="thumbnail-container" class="flex-1 overflow-y-auto">
                     <!-- Thumbnails generated here -->
                 </div>
@@ -154,25 +131,23 @@
 
         <!-- CONTENT AREA -->
         <div class="flex-1 flex flex-col min-w-0">
-
+            
             <!-- HEADER -->
-            <header
-                class="h-14 bg-white border-b border-slate-100 flex items-center justify-between px-4 lg:px-6 z-40 shrink-0">
+            <header class="h-14 bg-white border-b border-slate-100 flex items-center justify-between px-4 lg:px-6 z-40 shrink-0">
                 <div class="flex items-center gap-2 lg:gap-4">
                     <button id="toggleSidebar" class="p-2 text-slate-600">
                         <i data-lucide="align-left" class="w-5 h-5"></i>
                     </button>
                     <div class="h-4 w-px bg-slate-200"></div>
-
+                    
                     <!-- Tombol Back to Home -->
-                    <button onclick="window.location.href='/'"
-                        class="flex items-center gap-2 px-2 py-1.5 text-slate-500 hover:text-slate-900">
+                    <button onclick="window.location.href='/'" class="flex items-center gap-2 px-2 py-1.5 text-slate-500 hover:text-slate-900">
                         <i data-lucide="home" class="w-4 h-4"></i>
                         <span class="hidden sm:inline text-[11px] font-bold uppercase tracking-wider">Home</span>
                     </button>
 
                     <div class="hidden sm:block h-4 w-px bg-slate-200"></div>
-
+                    
                     <div class="flex items-center gap-2">
                         <i data-lucide="microscope" class="w-4 h-4 text-slate-900"></i>
                         <h1 class="font-bold text-sm tracking-widest text-slate-900 uppercase">Virologi</h1>
@@ -187,14 +162,13 @@
                         </button>
                         <div class="flex items-center gap-1">
                             <i data-lucide="search" class="w-3 h-3 text-slate-300"></i>
-                            <span id="zoom-percent"
-                                class="text-[10px] font-bold w-10 text-center text-slate-500">200%</span>
+                            <span id="zoom-percent" class="text-[10px] font-bold w-10 text-center text-slate-500">200%</span>
                         </div>
                         <button id="zoom-in" class="p-1 text-slate-400 hover:text-slate-900">
                             <i data-lucide="plus-circle" class="w-4 h-4"></i>
                         </button>
                     </div>
-
+                    
                     <div class="h-4 w-px bg-slate-200"></div>
 
                     <div class="flex items-center gap-4">
@@ -202,8 +176,7 @@
                             <i data-lucide="arrow-left-to-line" class="w-4 h-4"></i>
                         </button>
                         <div class="text-[11px] font-bold flex items-center gap-1 bg-slate-50 px-3 py-1 rounded">
-                            <input type="text" id="current-page" value="1"
-                                class="w-6 text-center bg-transparent border-none outline-none text-slate-900">
+                            <input type="text" id="current-page" value="1" class="w-6 text-center bg-transparent border-none outline-none text-slate-900">
                             <span class="text-slate-300 font-normal">/</span>
                             <span id="page-count" class="text-slate-400">0</span>
                         </div>
@@ -214,8 +187,7 @@
                 </div>
 
                 <div class="flex items-center gap-3">
-                    <button id="download-btn"
-                        class="bg-slate-900 text-white px-5 py-2 rounded-none text-[10px] font-bold uppercase tracking-widest flex items-center gap-2">
+                    <button id="download-btn" class="bg-slate-900 text-white px-5 py-2 rounded-none text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 active:opacity-80">
                         <i data-lucide="download-cloud" class="w-3.5 h-3.5"></i>
                         Download
                     </button>
@@ -223,11 +195,9 @@
             </header>
 
             <!-- VIEWER -->
-            <main class="flex-1 overflow-y-auto bg-[#f3f3f3] flex flex-col items-center py-8 px-4"
-                id="viewer-container">
+            <main class="flex-1 overflow-y-auto bg-[#f3f3f3] flex flex-col items-center py-8 px-4" id="viewer-container">
                 <div id="pdf-render-container" class="pdf-page-container relative shadow-sm">
-                    <div id="render-loader"
-                        class="absolute inset-0 flex flex-col items-center justify-center bg-white/80 z-20 hidden">
+                    <div id="render-loader" class="absolute inset-0 flex flex-col items-center justify-center bg-white/80 z-20 hidden">
                         <div class="loader"></div>
                     </div>
                 </div>
@@ -235,8 +205,7 @@
                 <footer class="mt-12 mb-12 text-center">
                     <div class="flex items-center justify-center gap-2 mb-2">
                         <i data-lucide="shield-check" class="w-3 h-3 text-slate-300"></i>
-                        <p class="text-slate-400 text-[9px] font-semibold tracking-[0.3em] uppercase">E-Learning
-                            Virologi Official</p>
+                        <p class="text-slate-400 text-[9px] font-semibold tracking-[0.3em] uppercase">E-Learning Virologi Official</p>
                     </div>
                 </footer>
             </main>
@@ -249,8 +218,7 @@
                 <div class="flex flex-col items-center">
                     <span class="text-[9px] text-slate-400 uppercase font-bold tracking-tighter">Halaman</span>
                     <span class="text-[12px] font-black tracking-widest">
-                        <span id="mobile-current">1</span> <span class="text-slate-300 font-light">/</span> <span
-                            id="mobile-total">0</span>
+                        <span id="mobile-current">1</span> <span class="text-slate-300 font-light">/</span> <span id="mobile-total">0</span>
                     </span>
                 </div>
                 <button id="mobile-next" class="text-slate-900">
@@ -271,7 +239,7 @@
         const ctx = canvas.getContext('2d');
         document.getElementById('pdf-render-container').appendChild(canvas);
 
-        const url = 'https://raw.githubusercontent.com/mozilla/pdf.js/ba2edeae/web/compressed.tracemonkey-pldi-09.pdf';
+       const url = '{{ asset($ebook->file_path) }}';
 
         function renderPage(num) {
             pageRendering = true;
@@ -313,7 +281,7 @@
             pdfDoc = doc;
             document.getElementById('page-count').textContent = doc.numPages;
             document.getElementById('mobile-total').textContent = doc.numPages;
-            if (window.innerWidth < 640) scale = 1.2;
+            if(window.innerWidth < 640) scale = 1.2; 
             updateUI();
             renderPage(pageNum);
             generateThumbnails();
@@ -364,10 +332,19 @@
         document.getElementById('toggleSidebar').onclick = toggleSidebar;
         document.getElementById('closeSidebarMobile').onclick = toggleSidebar;
         document.getElementById('overlay').onclick = toggleSidebar;
-        document.getElementById('download-btn').onclick = () => { const a = document.createElement('a'); a.href = url; a.download = 'Materi_Virologi.pdf'; a.click(); };
+        
+        // Logika download otomatis
+        document.getElementById('download-btn').onclick = function() {
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'Materi_Virologi_Lengkap.pdf';
+            link.style.display = 'none';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        };
 
         lucide.createIcons();
     </script>
 </body>
-
 </html>

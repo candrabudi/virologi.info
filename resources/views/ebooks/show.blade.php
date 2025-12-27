@@ -103,7 +103,7 @@
                         {{-- DOWNLOAD --}}
                         @if ($ebook->file_path)
                             <div class="mt--50">
-                                <a href="{{ asset($ebook->file_path) }}" class="rts-btn btn-primary" target="_blank">
+                                <a href="/ebooks/{{ $ebook->slug }}/read" class="rts-btn btn-primary" target="_blank">
                                     Download E-Book ({{ strtoupper($ebook->file_type) }})
                                 </a>
                             </div>
