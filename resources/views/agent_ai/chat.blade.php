@@ -278,46 +278,45 @@
         }
 
         .ai-heading {
-    font-size: 17px;
-    font-weight: 700;
-    margin: 18px 0 10px;
-}
+            font-size: 17px;
+            font-weight: 700;
+            margin: 18px 0 10px;
+        }
 
-.ai-text {
-    font-size: 15px;
-    line-height: 1.75;
-    color: #e5e7eb;
-}
+        .ai-text {
+            font-size: 15px;
+            line-height: 1.75;
+            color: #e5e7eb;
+        }
 
-.ai-list {
-    margin-left: 18px;
-    margin-bottom: 12px;
-}
+        .ai-list {
+            margin-left: 18px;
+            margin-bottom: 12px;
+        }
 
-.ai-list li {
-    margin-bottom: 6px;
-}
+        .ai-list li {
+            margin-bottom: 6px;
+        }
 
-.ai-inline-code {
-    background: rgba(255,255,255,0.08);
-    padding: 2px 6px;
-    border-radius: 6px;
-    font-size: 13px;
-}
+        .ai-inline-code {
+            background: rgba(255, 255, 255, 0.08);
+            padding: 2px 6px;
+            border-radius: 6px;
+            font-size: 13px;
+        }
 
-.ai-divider {
-    border: none;
-    border-top: 1px solid rgba(255,255,255,0.15);
-    margin: 16px 0;
-}
+        .ai-divider {
+            border: none;
+            border-top: 1px solid rgba(255, 255, 255, 0.15);
+            margin: 16px 0;
+        }
 
-.ai-tree {
-    background: rgba(255,255,255,0.05);
-    padding: 10px;
-    border-radius: 10px;
-    overflow-x: auto;
-}
-
+        .ai-tree {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 10px;
+            border-radius: 10px;
+            overflow-x: auto;
+        }
     </style>
     <style>
         .thinking-dots span {
@@ -659,30 +658,30 @@
     return linkify(
         escapeHtml(text)
             .replace(/`([^`]+)`/g, '<code class="ai-inline-code">$1</code>')
-            .replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')
-    )
-}
+                .replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')
+        )
+    }
 
- function renderAssistant(raw) {
-    if (!raw) return ''
+     function renderAssistant(raw) {
+        if (!raw) return ''
 
-    raw = stripLeakedCode(normalizeAiResponse(raw))
+        raw = stripLeakedCode(normalizeAiResponse(raw))
 
-    const parts = raw.split(/```/g)
+        const parts = raw.split(/```/g)
     let html = ''
     let currentCard = null
 
     function flushCard() {
         if (!currentCard) return
         html += `
-<div class="ai-roadmap-card">
-    <div class="ai-roadmap-header">
-        ${currentCard.title}
-    </div>
-    <div class="ai-roadmap-body">
-        ${currentCard.body.join('')}
-    </div>
-</div>`
+    <div class="ai-roadmap-card">
+        <div class="ai-roadmap-header">
+            ${currentCard.title}
+        </div>
+        <div class="ai-roadmap-body">
+            ${currentCard.body.join('')}
+        </div>
+    </div>`
         currentCard = null
     }
 
@@ -690,20 +689,20 @@
         return linkify(
             escapeHtml(text)
                 .replace(/`([^`]+)`/g, '<code class="ai-inline-code">$1</code>')
-                .replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')
-        )
-    }
+                    .replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')
+            )
+        }
 
-    parts.forEach((block, index) => {
-        // ================= CODE BLOCK =================
-        if (index % 2 === 1) {
-            flushCard()
+        parts.forEach((block, index) => {
+            // ================= CODE BLOCK =================
+            if (index % 2 === 1) {
+                flushCard()
 
-            const lines = block.split('\n')
-            const lang = (lines.shift() || 'code').trim()
-            const code = lines.join('\n')
+                const lines = block.split('\n')
+                const lang = (lines.shift() || 'code').trim()
+                const code = lines.join('\n')
 
-            html += `
+                html += `
 <div class="ai-code-canvas">
     <div class="ai-code-header">
         <span>${escapeHtml(lang.toUpperCase())}</span>
@@ -711,97 +710,97 @@
     </div>
     <pre><code>${escapeHtml(code)}</code></pre>
 </div>`
-            return
-        }
-
-        // ================= TEXT BLOCK =================
-        block.split('\n').forEach(line => {
-            const t = line.trim()
-            if (!t) return
-
-            // ---------- Roadmap Step: ### 1. Title
-            const stepMatch = t.match(/^###\s*\d+\.\s*(.+)/)
-            if (stepMatch) {
-                flushCard()
-                currentCard = {
-                    title: `🧭 ${escapeHtml(stepMatch[1])}`,
-                    body: []
-                }
                 return
             }
 
-            // ---------- Normal Heading: ### Title
-            const headingMatch = t.match(/^###\s+(.+)/)
-            if (headingMatch && !stepMatch) {
-                flushCard()
-                html += `
+            // ================= TEXT BLOCK =================
+            block.split('\n').forEach(line => {
+                const t = line.trim()
+                if (!t) return
+
+                // ---------- Roadmap Step: ### 1. Title
+                const stepMatch = t.match(/^###\s*\d+\.\s*(.+)/)
+                if (stepMatch) {
+                    flushCard()
+                    currentCard = {
+                        title: `🧭 ${escapeHtml(stepMatch[1])}`,
+                        body: []
+                    }
+                    return
+                }
+
+                // ---------- Normal Heading: ### Title
+                const headingMatch = t.match(/^###\s+(.+)/)
+                if (headingMatch && !stepMatch) {
+                    flushCard()
+                    html += `
 <h3 class="ai-heading">
     ${escapeHtml(headingMatch[1])}
 </h3>`
-                return
-            }
+                    return
+                }
 
-            // ---------- Section title inside card: - **Title**
-            const sectionMatch = t.match(/^-\s*\*\*(.+?)\*\*/)
-            if (sectionMatch && currentCard) {
-                currentCard.body.push(`
+                // ---------- Section title inside card: - **Title**
+                const sectionMatch = t.match(/^-\s*\*\*(.+?)\*\*/)
+                if (sectionMatch && currentCard) {
+                    currentCard.body.push(`
 <div class="ai-roadmap-section-title">
     ${escapeHtml(sectionMatch[1])}
 </div>`)
-                return
-            }
+                    return
+                }
 
-            // ---------- Bullet item inside card
-            if (t.startsWith('- ') && currentCard) {
-                currentCard.body.push(`
+                // ---------- Bullet item inside card
+                if (t.startsWith('- ') && currentCard) {
+                    currentCard.body.push(`
 <div class="ai-roadmap-item">
     • ${renderInline(t.slice(2))}
 </div>`)
-                return
-            }
+                    return
+                }
 
-            // ---------- Text inside card
-            if (currentCard) {
-                currentCard.body.push(`
+                // ---------- Text inside card
+                if (currentCard) {
+                    currentCard.body.push(`
 <p class="ai-roadmap-text">
     ${renderInline(t)}
 </p>`)
-                return
-            }
+                    return
+                }
 
-            // ---------- Normal paragraph (outside card)
-            html += `
+                // ---------- Normal paragraph (outside card)
+                html += `
 <p class="ai-text">
     ${renderInline(t)}
 </p>`
+            })
         })
-    })
 
-    flushCard()
-    return html
-}
+        flushCard()
+        return html
+    }
 
 
-     function scrollBottom() {
-         viewport.scrollTo({
-             top: viewport.scrollHeight,
-             behavior: 'smooth'
-         })
-     }
+         function scrollBottom() {
+             viewport.scrollTo({
+                 top: viewport.scrollHeight,
+                 behavior: 'smooth'
+             })
+         }
 
-     function appendUser(content) {
-         welcomeView.style.display = 'none'
-         const el = document.createElement('div')
-         el.className = 'flex justify-end'
-         el.innerHTML = `<div class="user-message">${escapeHtml(content)}</div>`
-         messageContainer.appendChild(el)
-         scrollBottom()
-     }
+         function appendUser(content) {
+             welcomeView.style.display = 'none'
+             const el = document.createElement('div')
+             el.className = 'flex justify-end'
+             el.innerHTML = `<div class="user-message">${escapeHtml(content)}</div>`
+             messageContainer.appendChild(el)
+             scrollBottom()
+         }
 
-     function appendAssistant(content) {
-         const el = document.createElement('div')
-         el.className = 'ai-message flex gap-5'
-         el.innerHTML = `
+         function appendAssistant(content) {
+             const el = document.createElement('div')
+             el.className = 'ai-message flex gap-5'
+             el.innerHTML = `
 <div class="w-9 h-9 rounded-full bg-white flex items-center justify-center">
     <i class="fas fa-shield-halved text-black text-xs"></i>
 </div>
@@ -813,14 +812,14 @@
         ${renderAssistant(content)}
     </div>
 </div>`
-         messageContainer.appendChild(el)
-         scrollBottom()
-     }
+             messageContainer.appendChild(el)
+             scrollBottom()
+         }
 
-     function appendThinking() {
-         const el = document.createElement('div')
-         el.className = 'ai-message flex gap-5'
-         el.innerHTML = `
+         function appendThinking() {
+             const el = document.createElement('div')
+             el.className = 'ai-message flex gap-5'
+             el.innerHTML = `
 <div class="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center">
     <i class="fas fa-spinner fa-spin text-xs text-white/70"></i>
 </div>
@@ -830,54 +829,54 @@
     </p>
     <div class="text-gray-400 italic">Menganalisis permintaan keamanan...</div>
 </div>`
-         messageContainer.appendChild(el)
-         thinkingEl = el
-         scrollBottom()
-     }
-
-     function removeThinking() {
-         if (thinkingEl) thinkingEl.remove()
-         thinkingEl = null
-     }
-
-     function closeAllSessionMenus() {
-         document.querySelectorAll('[data-session-menu]')
-             .forEach(m => m.classList.add('hidden'))
-         openMenuToken = null
-     }
-
-     function toggleSessionMenu(e, token) {
-         e.stopPropagation()
-         const menu = document.querySelector(`[data-session-menu="${token}"]`)
-         if (!menu) return
-
-         if (openMenuToken && openMenuToken !== token) closeAllSessionMenus()
-
-         const hidden = menu.classList.contains('hidden')
-         closeAllSessionMenus()
-
-         if (hidden) {
-             menu.classList.remove('hidden')
-             openMenuToken = token
+             messageContainer.appendChild(el)
+             thinkingEl = el
+             scrollBottom()
          }
-     }
 
-     function loadSessions() {
-         axios.get('/ai-agent/sessions').then(res => {
-             sessionList.innerHTML = ''
-             const items = (res.data || []).slice().sort(
-                 (a, b) => (b.is_pinned ? 1 : 0) - (a.is_pinned ? 1 : 0)
-             )
+         function removeThinking() {
+             if (thinkingEl) thinkingEl.remove()
+             thinkingEl = null
+         }
 
-             items.forEach(s => {
-                 const row = document.createElement('div')
-                 row.className = `px-4 py-3 rounded-lg cursor-pointer text-sm ${
+         function closeAllSessionMenus() {
+             document.querySelectorAll('[data-session-menu]')
+                 .forEach(m => m.classList.add('hidden'))
+             openMenuToken = null
+         }
+
+         function toggleSessionMenu(e, token) {
+             e.stopPropagation()
+             const menu = document.querySelector(`[data-session-menu="${token}"]`)
+             if (!menu) return
+
+             if (openMenuToken && openMenuToken !== token) closeAllSessionMenus()
+
+             const hidden = menu.classList.contains('hidden')
+             closeAllSessionMenus()
+
+             if (hidden) {
+                 menu.classList.remove('hidden')
+                 openMenuToken = token
+             }
+         }
+
+         function loadSessions() {
+             axios.get('/ai-agent/sessions').then(res => {
+                 sessionList.innerHTML = ''
+                 const items = (res.data || []).slice().sort(
+                     (a, b) => (b.is_pinned ? 1 : 0) - (a.is_pinned ? 1 : 0)
+                 )
+
+                 items.forEach(s => {
+                     const row = document.createElement('div')
+                     row.className = `px-4 py-3 rounded-lg cursor-pointer text-sm ${
                 activeSession === s.session_token
                     ? 'bg-white/10 text-white'
                     : 'text-gray-400 hover:text-white hover:bg-white/5'
             }`
 
-                 row.innerHTML = `
+                     row.innerHTML = `
 <div class="flex items-center justify-between gap-3">
     <div class="truncate flex-1">${escapeHtml(s.title || 'Percakapan Baru')}</div>
     <div class="relative flex-shrink-0">
@@ -898,87 +897,87 @@
         </div>
     </div>
 </div>`
-                 row.onclick = () => openSession(s.session_token)
-                 sessionList.appendChild(row)
+                     row.onclick = () => openSession(s.session_token)
+                     sessionList.appendChild(row)
+                 })
              })
-         })
-     }
-
-     function openSession(token, push = true) {
-         closeAllSessionMenus()
-         activeSession = token
-         isCreatingSession = false
-         messageContainer.innerHTML = ''
-         welcomeView.style.display = 'none'
-         if (push) setUrl(token)
-         loadSessions()
-
-         axios.get(`/ai-agent/sessions/${token}`).then(res => {
-             messageContainer.innerHTML = ''
-             welcomeView.style.display = 'none'
-             res.data.messages.forEach(m =>
-                 m.role === 'user' ?
-                 appendUser(m.content) :
-                 appendAssistant(m.content)
-             )
-         })
-     }
-
-     function createNewChat() {
-         if (isCreatingSession) return Promise.resolve()
-         isCreatingSession = true
-
-         return axios.post('/ai-agent/sessions')
-             .then(r => {
-                 activeSession = r.data.session_token
-                 setUrl(activeSession)
-                 messageContainer.innerHTML = ''
-                 welcomeView.style.display = 'block'
-                 loadSessions()
-             })
-             .finally(() => isCreatingSession = false)
-     }
-
-     function sendMessage(text) {
-         appendUser(text)
-         appendThinking()
-         sendBtn.disabled = true
-
-         axios.post(`/ai-agent/sessions/${activeSession}/message`, {
-                 content: text
-             })
-             .then(res => {
-                 removeThinking()
-                 appendAssistant(res.data.content)
-                 loadSessions()
-             })
-             .catch(err => {
-                 removeThinking()
-                 appendAssistant(err.response?.data?.content || 'Permintaan tidak dapat diproses.')
-             })
-             .finally(() => {
-                 sendBtn.disabled = false
-             })
-     }
-
-     chatForm.addEventListener('submit', async e => {
-         e.preventDefault()
-
-         const text = chatInput.value.trim()
-         if (!text) return
-
-         chatInput.value = ''
-
-         if (!activeSession) {
-             await createNewChat()
          }
 
-         sendMessage(text)
-     })
+         function openSession(token, push = true) {
+             closeAllSessionMenus()
+             activeSession = token
+             isCreatingSession = false
+             messageContainer.innerHTML = ''
+             welcomeView.style.display = 'none'
+             if (push) setUrl(token)
+             loadSessions()
 
-     chatInput.addEventListener('input', () => {
-         sendBtn.disabled = !chatInput.value.trim()
-     })
+             axios.get(`/ai-agent/sessions/${token}`).then(res => {
+                 messageContainer.innerHTML = ''
+                 welcomeView.style.display = 'none'
+                 res.data.messages.forEach(m =>
+                     m.role === 'user' ?
+                     appendUser(m.content) :
+                     appendAssistant(m.content)
+                 )
+             })
+         }
+
+         function createNewChat() {
+             if (isCreatingSession) return Promise.resolve()
+             isCreatingSession = true
+
+             return axios.post('/ai-agent/sessions')
+                 .then(r => {
+                     activeSession = r.data.session_token
+                     setUrl(activeSession)
+                     messageContainer.innerHTML = ''
+                     welcomeView.style.display = 'block'
+                     loadSessions()
+                 })
+                 .finally(() => isCreatingSession = false)
+         }
+
+         function sendMessage(text) {
+             appendUser(text)
+             appendThinking()
+             sendBtn.disabled = true
+
+             axios.post(`/ai-agent/sessions/${activeSession}/message`, {
+                     content: text
+                 })
+                 .then(res => {
+                     removeThinking()
+                     appendAssistant(res.data.content)
+                     loadSessions()
+                 })
+                 .catch(err => {
+                     removeThinking()
+                     appendAssistant(err.response?.data?.content || 'Permintaan tidak dapat diproses.')
+                 })
+                 .finally(() => {
+                     sendBtn.disabled = false
+                 })
+         }
+
+         chatForm.addEventListener('submit', async e => {
+             e.preventDefault()
+
+             const text = chatInput.value.trim()
+             if (!text) return
+
+             chatInput.value = ''
+
+             if (!activeSession) {
+                 await createNewChat()
+             }
+
+             sendMessage(text)
+         })
+
+         chatInput.addEventListener('input', () => {
+             sendBtn.disabled = !chatInput.value.trim()
+         })
     </script>
 
     <script>
