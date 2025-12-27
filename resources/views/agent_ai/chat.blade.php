@@ -371,35 +371,54 @@
         <div id="chat-viewport" class="flex-1 overflow-y-auto px-4 md:px-10 py-10 custom-scroll">
             <div class="max-w-4xl mx-auto w-full">
                 <div id="welcome-view" class="mt-10 mb-20">
-                    <h1 class="text-4xl md:text-6xl font-bold tracking-tighter mb-6 leading-[1.1]">Bagaimana saya
-                        bisa<br><span class="text-gray-500">membantu anda hari ini?</span></h1>
+                    <h1 class="text-4xl md:text-6xl font-bold tracking-tighter mb-6 leading-[1.1]">
+                        Apa yang ingin kamu pelajari<br>
+                        <span class="text-gray-500">tentang Cyber Security & Coding hari ini?</span>
+                    </h1>
 
                     <div class="bento-grid">
-                        <div onclick="triggerPrompt('Buatkan ringkasan berita teknologi hari ini')" class="bento-item">
-                            <i class="fas fa-newspaper text-indigo-400 mb-4 text-lg"></i>
-                            <h3 class="font-bold text-sm mb-1">Berita Teknologi</h3>
-                            <p class="text-xs text-gray-500 leading-relaxed">Ringkasan cepat tren AI & gadget terbaru.
+                        <div onclick="triggerPrompt('Jelaskan konsep dasar cyber security untuk pemula')"
+                            class="bento-item">
+                            <i class="fas fa-shield-halved text-indigo-400 mb-4 text-lg"></i>
+                            <h3 class="font-bold text-sm mb-1">Dasar Cyber Security</h3>
+                            <p class="text-xs text-gray-500 leading-relaxed">
+                                Pelajari fundamental keamanan: threat, vulnerability, dan attack vector.
                             </p>
                         </div>
-                        <div onclick="triggerPrompt('Analisis kode React ini untuk performa')" class="bento-item">
-                            <i class="fas fa-terminal text-emerald-400 mb-4 text-lg"></i>
-                            <h3 class="font-bold text-sm mb-1">Analisis Kode</h3>
-                            <p class="text-xs text-gray-500 leading-relaxed">Cari bug dan optimasi struktur kode Anda.
+
+                        <div onclick="triggerPrompt('Analisis keamanan kode ini dan jelaskan potensi celahnya')"
+                            class="bento-item">
+                            <i class="fas fa-code text-emerald-400 mb-4 text-lg"></i>
+                            <h3 class="font-bold text-sm mb-1">Analisis Kode Aman</h3>
+                            <p class="text-xs text-gray-500 leading-relaxed">
+                                Deteksi bug, SQL injection, XSS, dan praktik coding yang aman.
                             </p>
                         </div>
-                        <div onclick="triggerPrompt('Rancang itinerary liburan ke Bali 3 hari')" class="bento-item">
-                            <i class="fas fa-map-location-dot text-amber-400 mb-4 text-lg"></i>
-                            <h3 class="font-bold text-sm mb-1">Rencana Wisata</h3>
-                            <p class="text-xs text-gray-500 leading-relaxed">Dapatkan jadwal perjalanan yang
-                                dipersonalisasi.</p>
+
+                        <div onclick="triggerPrompt('Bagaimana cara mencegah DDoS dan brute force attack di server?')"
+                            class="bento-item">
+                            <i class="fas fa-server text-rose-400 mb-4 text-lg"></i>
+                            <h3 class="font-bold text-sm mb-1">Proteksi Server</h3>
+                            <p class="text-xs text-gray-500 leading-relaxed">
+                                Strategi firewall, rate limiting, dan hardening server.
+                            </p>
+                        </div>
+
+                        <div onclick="triggerPrompt('Buatkan roadmap belajar programming untuk cyber security')"
+                            class="bento-item">
+                            <i class="fas fa-road text-amber-400 mb-4 text-lg"></i>
+                            <h3 class="font-bold text-sm mb-1">Roadmap Belajar</h3>
+                            <p class="text-xs text-gray-500 leading-relaxed">
+                                Panduan step-by-step coding: backend, security, hingga pentest.
+                            </p>
                         </div>
                     </div>
                 </div>
+
                 <div id="message-container" class="space-y-12"></div>
             </div>
         </div>
 
-        <!-- Input Area - Perbaikan Kesejajaran -->
         <div class="input-container">
             <div class="input-wrapper">
                 <button type="button"
@@ -409,8 +428,8 @@
                 </button>
 
                 <form id="chat-form" class="flex-1 flex items-center">
-                    <textarea id="chat-input" rows="1" placeholder="Kirim pesan ke Virologi..." class="custom-scroll"
-                        oninput="adjustInputHeight(this)"></textarea>
+                    <textarea id="chat-input" rows="1" placeholder="Kirim pesan ke Cyber Security Assistant..."
+                        class="custom-scroll" oninput="adjustInputHeight(this)"></textarea>
 
                     <button type="submit" id="send-btn"
                         class="w-10 h-10 rounded-xl bg-white text-black flex items-center justify-center hover:bg-gray-200 active:scale-90 transition-all disabled:opacity-30 disabled:pointer-events-none flex-shrink-0 ml-2">
@@ -418,6 +437,7 @@
                     </button>
                 </form>
             </div>
+
             <p class="text-[9px] text-center text-gray-600 mt-4 uppercase tracking-[0.4em] font-medium opacity-60">
                 Virologi v2.5 • AI Assistant 2025</p>
         </div>
@@ -569,15 +589,15 @@ function copyCode(btn) {
     raw = stripLeakedCode(raw)
 
     const parts = raw.split(/```/g)
-        let html = ''
+                            let html = ''
 
-        parts.forEach((block, index) => {
-            if (index % 2 === 1) {
-                const lines = block.split('\n')
-                const lang = (lines.shift() || 'code').trim()
-                const code = lines.join('\n').trim()
+                            parts.forEach((block, index) => {
+                                if (index % 2 === 1) {
+                                    const lines = block.split('\n')
+                                    const lang = (lines.shift() || 'code').trim()
+                                    const code = lines.join('\n').trim()
 
-                html += `
+                                    html += `
 <div class="ai-code-canvas">
     <div class="ai-code-header">
         <span>${lang.toUpperCase()}</span>
@@ -585,44 +605,44 @@ function copyCode(btn) {
     </div>
     <pre><code>${escapeHtml(code)}</code></pre>
 </div>`
-            } else {
-                block.trim().split('\n').forEach(line => {
-                    const t = line.trim()
-                    if (!t) return
-                    html += `
+                                } else {
+                                    block.trim().split('\n').forEach(line => {
+                                        const t = line.trim()
+                                        if (!t) return
+                                        html += `
 <p class="ai-text">
     ${linkify(escapeHtml(t).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>'))}
 </p>`
-                })
-            }
-        })
+                                    })
+                                }
+                            })
 
-        return html
-    }
-
-
+                            return html
+                        }
 
 
-                    function scrollBottom() {
-                        viewport.scrollTo({
-                            top: viewport.scrollHeight,
-                            behavior: 'smooth'
-                        })
-                    }
 
-                    function appendUser(content) {
-                        welcomeView.style.display = 'none'
-                        const el = document.createElement('div')
-                        el.className = 'flex justify-end'
-                        el.innerHTML = `<div class="user-message">${escapeHtml(content)}</div>`
-                        messageContainer.appendChild(el)
-                        scrollBottom()
-                    }
 
-                   function appendAssistant(content) {
-            const el = document.createElement('div')
-            el.className = 'ai-message flex gap-5'
-            el.innerHTML = `
+                                        function scrollBottom() {
+                                            viewport.scrollTo({
+                                                top: viewport.scrollHeight,
+                                                behavior: 'smooth'
+                                            })
+                                        }
+
+                                        function appendUser(content) {
+                                            welcomeView.style.display = 'none'
+                                            const el = document.createElement('div')
+                                            el.className = 'flex justify-end'
+                                            el.innerHTML = `<div class="user-message">${escapeHtml(content)}</div>`
+                                            messageContainer.appendChild(el)
+                                            scrollBottom()
+                                        }
+
+                                       function appendAssistant(content) {
+                                const el = document.createElement('div')
+                                el.className = 'ai-message flex gap-5'
+                                el.innerHTML = `
 <div class="w-9 h-9 rounded-full bg-white flex items-center justify-center">
     <i class="fas fa-shield-halved text-black text-xs"></i>
 </div>
@@ -634,15 +654,15 @@ function copyCode(btn) {
         ${renderAssistant(content)}
     </div>
 </div>`
-            messageContainer.appendChild(el)
-            scrollBottom()
-        }
+                                messageContainer.appendChild(el)
+                                scrollBottom()
+                            }
 
 
-                    function appendThinking() {
-                        const el = document.createElement('div')
-                        el.className = 'ai-message flex gap-5'
-                        el.innerHTML = `
+                                        function appendThinking() {
+                                            const el = document.createElement('div')
+                                            el.className = 'ai-message flex gap-5'
+                                            el.innerHTML = `
                                     <div class="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center">
                                         <i class="fas fa-spinner fa-spin text-xs text-white/70"></i>
                                     </div>
@@ -650,43 +670,43 @@ function copyCode(btn) {
                                         <p class="text-[10px] font-bold text-gray-600 uppercase tracking-widest mb-3">Cyber Security Assistant</p>
                                         <div class="text-gray-400 italic">Menganalisis permintaan keamanan...</div>
                                     </div>`
-                        messageContainer.appendChild(el)
-                        thinkingEl = el
-                        scrollBottom()
-                    }
+                                            messageContainer.appendChild(el)
+                                            thinkingEl = el
+                                            scrollBottom()
+                                        }
 
-                    function removeThinking() {
-                        if (thinkingEl) thinkingEl.remove()
-                        thinkingEl = null
-                    }
+                                        function removeThinking() {
+                                            if (thinkingEl) thinkingEl.remove()
+                                            thinkingEl = null
+                                        }
 
-                    function closeAllSessionMenus() {
-                        document.querySelectorAll('[data-session-menu]').forEach(m => m.classList.add('hidden'))
-                        openMenuToken = null
-                    }
+                                        function closeAllSessionMenus() {
+                                            document.querySelectorAll('[data-session-menu]').forEach(m => m.classList.add('hidden'))
+                                            openMenuToken = null
+                                        }
 
-                    function toggleSessionMenu(e, token) {
-                        e.stopPropagation()
-                        const menu = document.querySelector(`[data-session-menu="${token}"]`)
-                        if (!menu) return
-                        if (openMenuToken && openMenuToken !== token) closeAllSessionMenus()
-                        const hidden = menu.classList.contains('hidden')
-                        closeAllSessionMenus()
-                        if (hidden) {
-                            menu.classList.remove('hidden');
-                            openMenuToken = token
-                        }
-                    }
+                                        function toggleSessionMenu(e, token) {
+                                            e.stopPropagation()
+                                            const menu = document.querySelector(`[data-session-menu="${token}"]`)
+                                            if (!menu) return
+                                            if (openMenuToken && openMenuToken !== token) closeAllSessionMenus()
+                                            const hidden = menu.classList.contains('hidden')
+                                            closeAllSessionMenus()
+                                            if (hidden) {
+                                                menu.classList.remove('hidden');
+                                                openMenuToken = token
+                                            }
+                                        }
 
-                    function loadSessions() {
-                        axios.get('/ai-agent/sessions').then(res => {
-                            sessionList.innerHTML = ''
-                            const items = (res.data || []).slice().sort((a, b) => (b.is_pinned ? 1 : 0) - (a.is_pinned ? 1 : 0))
-                            items.forEach(s => {
-                                const row = document.createElement('div')
-                                row.className =
-                                    `px-4 py-3 rounded-lg cursor-pointer text-sm ${activeSession===s.session_token?'bg-white/10 text-white':'text-gray-400 hover:text-white hover:bg-white/5'}`
-                                row.innerHTML = `
+                                        function loadSessions() {
+                                            axios.get('/ai-agent/sessions').then(res => {
+                                                sessionList.innerHTML = ''
+                                                const items = (res.data || []).slice().sort((a, b) => (b.is_pinned ? 1 : 0) - (a.is_pinned ? 1 : 0))
+                                                items.forEach(s => {
+                                                    const row = document.createElement('div')
+                                                    row.className =
+                                                        `px-4 py-3 rounded-lg cursor-pointer text-sm ${activeSession===s.session_token?'bg-white/10 text-white':'text-gray-400 hover:text-white hover:bg-white/5'}`
+                                                    row.innerHTML = `
                                             <div class="flex items-center justify-between gap-3">
                                                 <div class="truncate flex-1">${escapeHtml(s.title||'Percakapan Baru')}</div>
                                                 <div class="relative flex-shrink-0">
@@ -707,86 +727,96 @@ function copyCode(btn) {
                                                     </div>
                                                 </div>
                                             </div>`
-                                row.onclick = () => openSession(s.session_token)
-                                sessionList.appendChild(row)
-                            })
-                        })
-                    }
+                                                    row.onclick = () => openSession(s.session_token)
+                                                    sessionList.appendChild(row)
+                                                })
+                                            })
+                                        }
 
-                    function openSession(token, push = true) {
-                        closeAllSessionMenus()
-                        activeSession = token
-                        isCreatingSession = false
-                        messageContainer.innerHTML = ''
-                        welcomeView.style.display = 'none'
-                        if (push) setUrl(token)
-                        loadSessions()
-                        axios.get(`/ai-agent/sessions/${token}`).then(res => {
-                            messageContainer.innerHTML = ''
-                            welcomeView.style.display = 'none'
-                            res.data.messages.forEach(m => m.role === 'user' ? appendUser(m.content) : appendAssistant(m
-                                .content))
-                        })
-                    }
+                                        function openSession(token, push = true) {
+                                            closeAllSessionMenus()
+                                            activeSession = token
+                                            isCreatingSession = false
+                                            messageContainer.innerHTML = ''
+                                            welcomeView.style.display = 'none'
+                                            if (push) setUrl(token)
+                                            loadSessions()
+                                            axios.get(`/ai-agent/sessions/${token}`).then(res => {
+                                                messageContainer.innerHTML = ''
+                                                welcomeView.style.display = 'none'
+                                                res.data.messages.forEach(m => m.role === 'user' ? appendUser(m.content) : appendAssistant(m
+                                                    .content))
+                                            })
+                                        }
 
-                    function createNewChat() {
-                        if (isCreatingSession) return
-                        isCreatingSession = true
-                        axios.post('/ai-agent/sessions').then(r => {
-                            activeSession = r.data.session_token
-                            setUrl(activeSession)
-                            messageContainer.innerHTML = ''
-                            welcomeView.style.display = 'block'
-                            loadSessions()
-                        }).finally(() => isCreatingSession = false)
-                    }
+                                        function createNewChat() {
+                                            if (isCreatingSession) return
+                                            isCreatingSession = true
+                                            axios.post('/ai-agent/sessions').then(r => {
+                                                activeSession = r.data.session_token
+                                                setUrl(activeSession)
+                                                messageContainer.innerHTML = ''
+                                                welcomeView.style.display = 'block'
+                                                loadSessions()
+                                            }).finally(() => isCreatingSession = false)
+                                        }
 
-                    function sendMessage(text) {
-                        appendUser(text)
-                        appendThinking()
-                        sendBtn.disabled = true
-                        axios.post(`/ai-agent/sessions/${activeSession}/message`, {
-                                    content: text
-                                })
-                                .then(res => {
-                                    removeThinking()
-                                    appendAssistant(res.data.content)
-                                    loadSessions()
-                                })
-                                .catch(err => {
-                                    removeThinking()
-                                    const msg = err.response?.data?.content || 'Permintaan tidak dapat diproses.'
-                                    appendAssistant(msg)
-                                })
-                                .finally(() => sendBtn.disabled = false)
-                        }
+                                        function sendMessage(text) {
+                                            appendUser(text)
+                                            appendThinking()
+                                            sendBtn.disabled = true
+                                            axios.post(`/ai-agent/sessions/${activeSession}/message`, {
+                                                        content: text
+                                                    })
+                                                    .then(res => {
+                                                        removeThinking()
+                                                        appendAssistant(res.data.content)
+                                                        loadSessions()
+                                                    })
+                                                    .catch(err => {
+                                                        removeThinking()
+                                                        const msg = err.response?.data?.content || 'Permintaan tidak dapat diproses.'
+                                                        appendAssistant(msg)
+                                                    })
+                                                    .finally(() => sendBtn.disabled = false)
+                                            }
 
-                        chatForm.addEventListener('submit', e => {
-                            e.preventDefault()
-                            const text = chatInput.value.trim()
-                            if (!text) return
-                            chatInput.value = ''
-                            adjustInputHeight(chatInput)
-                            if (!activeSession) {
-                                createNewChat()
-                                const w = setInterval(() => {
-                                    if (activeSession) {
-                                        clearInterval(w)
-                                        sendMessage(text)
-                                    }
-                                }, 50)
-                                return
-                            }
-                            sendMessage(text)
-                        })
+                                            chatForm.addEventListener('submit', e => {
+                                                e.preventDefault()
+                                                const text = chatInput.value.trim()
+                                                if (!text) return
+                                                chatInput.value = ''
+                                                adjustInputHeight(chatInput)
+                                                if (!activeSession) {
+                                                    createNewChat()
+                                                    const w = setInterval(() => {
+                                                        if (activeSession) {
+                                                            clearInterval(w)
+                                                            sendMessage(text)
+                                                        }
+                                                    }, 50)
+                                                    return
+                                                }
+                                                sendMessage(text)
+                                            })
+
+                                            
     </script>
 
     <script>
         function adjustInputHeight(el) {
             el.style.height = 'auto'
-            el.style.height = Math.min(el.scrollHeight, 200) + 'px'
-            sendBtn.disabled = !el.value.trim()
+            el.style.height = Math.min(el.scrollHeight, 240) + 'px'
         }
+
+        chatInput.addEventListener('keydown', e => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault()
+                chatForm.dispatchEvent(new Event('submit'))
+            }
+        })
+
+
 
         function pinSession(e, token) {
             e.stopPropagation()

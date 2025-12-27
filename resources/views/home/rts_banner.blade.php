@@ -1,3 +1,15 @@
+@php
+    use App\Models\Website;
+    use App\Models\FooterSetting;
+    use App\Models\FooterQuickLink;
+    use App\Models\FooterContact;
+
+    $setting = Website::first();
+    $footerSetting = FooterSetting::where('is_active', true)->first();
+    $quickLinks = FooterQuickLink::where('is_active', true)->orderBy('sort_order')->get();
+    $contacts = FooterContact::where('is_active', true)->orderBy('sort_order')->get();
+@endphp
+
 <style>
     .video-bg-container {
         position: relative;
@@ -48,12 +60,11 @@
                 <div class="banner-inner-content-12">
                     <p class="pre">
                         <img
-                            src="{{ asset('assets/images/banner/icon/01.svg') }}"
+                            src="{{ $setting?->logo_rectangle ?? asset('logo-180.webp') }}"
                             alt=""
                             loading="lazy"
                             decoding="async"
                         >
-                        {{ $hero?->pre_title ?? 'Virologi' }}
                     </p>
 
                     <h1 class="title rts-text-anime-style-1">
