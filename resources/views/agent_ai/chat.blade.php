@@ -240,6 +240,42 @@
             color: #e5e7eb;
             font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
         }
+
+        .ai-roadmap-card {
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02));
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 16px;
+            padding: 18px 20px;
+            margin-bottom: 20px;
+        }
+
+        .ai-roadmap-header {
+            font-weight: 700;
+            font-size: 16px;
+            color: #fff;
+            margin-bottom: 14px;
+        }
+
+        .ai-roadmap-section-title {
+            margin-top: 14px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #34d399;
+        }
+
+        .ai-roadmap-item {
+            font-size: 14px;
+            color: #e5e7eb;
+            margin-left: 8px;
+            line-height: 1.6;
+        }
+
+        .ai-roadmap-text {
+            font-size: 14px;
+            color: #d1d5db;
+            line-height: 1.7;
+            margin-top: 6px;
+        }
     </style>
     <style>
         .thinking-dots span {
@@ -581,16 +617,34 @@ function renderAssistant(raw) {
     if (!raw) return ''
 
     raw = stripLeakedCode(normalizeAiResponse(raw))
+
     const parts = raw.split(/```/g)
-        let html = ''
+            let html = ''
+            let currentCard = null
 
-        parts.forEach((block, index) => {
-            if (index % 2 === 1) {
-                const lines = block.split('\n')
-                const lang = (lines.shift() || 'code').trim()
-                const code = lines.join('\n').trim()
-
+            function flushCard() {
+                if (!currentCard) return
                 html += `
+<div class="ai-roadmap-card">
+    <div class="ai-roadmap-header">
+        ${currentCard.title}
+    </div>
+    <div class="ai-roadmap-body">
+        ${currentCard.body.join('')}
+    </div>
+</div>`
+                currentCard = null
+            }
+
+            parts.forEach((block, index) => {
+                if (index % 2 === 1) {
+                    flushCard()
+
+                    const lines = block.split('\n')
+                    const lang = (lines.shift() || 'code').trim()
+                    const code = lines.join('\n').trim()
+
+                    html += `
 <div class="ai-code-canvas">
     <div class="ai-code-header">
         <span>${escapeHtml(lang.toUpperCase())}</span>
@@ -598,38 +652,79 @@ function renderAssistant(raw) {
     </div>
     <pre><code>${escapeHtml(code)}</code></pre>
 </div>`
-            } else {
+                    return
+                }
+
                 block.split('\n').forEach(line => {
                     const t = line.trim()
                     if (!t) return
+
+                    const stepMatch = t.match(/^###\s*\d+\.\s*(.+)/i)
+                    const sectionMatch = t.match(/^-\s*\*\*(.+?)\*\*/)
+
+                    if (stepMatch) {
+                        flushCard()
+                        currentCard = {
+                            title: `🧭 ${escapeHtml(stepMatch[1])}`,
+                            body: []
+                        }
+                        return
+                    }
+
+                    if (sectionMatch && currentCard) {
+                        currentCard.body.push(`
+<div class="ai-roadmap-section">
+    <div class="ai-roadmap-section-title">
+        ${escapeHtml(sectionMatch[1])}
+    </div>
+</div>`)
+                        return
+                    }
+
+                    if (t.startsWith('- ') && currentCard) {
+                        currentCard.body.push(`
+<div class="ai-roadmap-item">
+    • ${linkify(escapeHtml(t.slice(2)))}
+</div>`)
+                        return
+                    }
+
+                    if (currentCard) {
+                        currentCard.body.push(`
+<p class="ai-roadmap-text">
+    ${linkify(escapeHtml(t))}
+</p>`)
+                        return
+                    }
+
                     html += `
 <p class="ai-text">
     ${linkify(escapeHtml(t).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>'))}
 </p>`
                 })
-            }
-        })
+            })
 
-        return html
-    }
+            flushCard()
+            return html
+        }
 
-    function scrollBottom() {
-        viewport.scrollTo({ top: viewport.scrollHeight, behavior: 'smooth' })
-    }
+                function scrollBottom() {
+                    viewport.scrollTo({ top: viewport.scrollHeight, behavior: 'smooth' })
+                }
 
-    function appendUser(content) {
-        welcomeView.style.display = 'none'
-        const el = document.createElement('div')
-        el.className = 'flex justify-end'
-        el.innerHTML = `<div class="user-message">${escapeHtml(content)}</div>`
-        messageContainer.appendChild(el)
-        scrollBottom()
-    }
+                function appendUser(content) {
+                    welcomeView.style.display = 'none'
+                    const el = document.createElement('div')
+                    el.className = 'flex justify-end'
+                    el.innerHTML = `<div class="user-message">${escapeHtml(content)}</div>`
+                    messageContainer.appendChild(el)
+                    scrollBottom()
+                }
 
-    function appendAssistant(content) {
-        const el = document.createElement('div')
-        el.className = 'ai-message flex gap-5'
-        el.innerHTML = `
+                function appendAssistant(content) {
+                    const el = document.createElement('div')
+                    el.className = 'ai-message flex gap-5'
+                    el.innerHTML = `
 <div class="w-9 h-9 rounded-full bg-white flex items-center justify-center">
     <i class="fas fa-shield-halved text-black text-xs"></i>
 </div>
@@ -641,14 +736,14 @@ function renderAssistant(raw) {
         ${renderAssistant(content)}
     </div>
 </div>`
-        messageContainer.appendChild(el)
-        scrollBottom()
-    }
+                    messageContainer.appendChild(el)
+                    scrollBottom()
+                }
 
-    function appendThinking() {
-        const el = document.createElement('div')
-        el.className = 'ai-message flex gap-5'
-        el.innerHTML = `
+                function appendThinking() {
+                    const el = document.createElement('div')
+                    el.className = 'ai-message flex gap-5'
+                    el.innerHTML = `
 <div class="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center">
     <i class="fas fa-spinner fa-spin text-xs text-white/70"></i>
 </div>
@@ -658,54 +753,54 @@ function renderAssistant(raw) {
     </p>
     <div class="text-gray-400 italic">Menganalisis permintaan keamanan...</div>
 </div>`
-        messageContainer.appendChild(el)
-        thinkingEl = el
-        scrollBottom()
-    }
+                    messageContainer.appendChild(el)
+                    thinkingEl = el
+                    scrollBottom()
+                }
 
-    function removeThinking() {
-        if (thinkingEl) thinkingEl.remove()
-        thinkingEl = null
-    }
+                function removeThinking() {
+                    if (thinkingEl) thinkingEl.remove()
+                    thinkingEl = null
+                }
 
-    function closeAllSessionMenus() {
-        document.querySelectorAll('[data-session-menu]')
-            .forEach(m => m.classList.add('hidden'))
-        openMenuToken = null
-    }
+                function closeAllSessionMenus() {
+                    document.querySelectorAll('[data-session-menu]')
+                        .forEach(m => m.classList.add('hidden'))
+                    openMenuToken = null
+                }
 
-    function toggleSessionMenu(e, token) {
-        e.stopPropagation()
-        const menu = document.querySelector(`[data-session-menu="${token}"]`)
-        if (!menu) return
+                function toggleSessionMenu(e, token) {
+                    e.stopPropagation()
+                    const menu = document.querySelector(`[data-session-menu="${token}"]`)
+                    if (!menu) return
 
-        if (openMenuToken && openMenuToken !== token) closeAllSessionMenus()
+                    if (openMenuToken && openMenuToken !== token) closeAllSessionMenus()
 
-        const hidden = menu.classList.contains('hidden')
-        closeAllSessionMenus()
+                    const hidden = menu.classList.contains('hidden')
+                    closeAllSessionMenus()
 
-        if (hidden) {
-            menu.classList.remove('hidden')
-            openMenuToken = token
-        }
-    }
+                    if (hidden) {
+                        menu.classList.remove('hidden')
+                        openMenuToken = token
+                    }
+                }
 
-    function loadSessions() {
-        axios.get('/ai-agent/sessions').then(res => {
-            sessionList.innerHTML = ''
-            const items = (res.data || []).slice().sort(
-                (a, b) => (b.is_pinned ? 1 : 0) - (a.is_pinned ? 1 : 0)
-            )
+                function loadSessions() {
+                    axios.get('/ai-agent/sessions').then(res => {
+                        sessionList.innerHTML = ''
+                        const items = (res.data || []).slice().sort(
+                            (a, b) => (b.is_pinned ? 1 : 0) - (a.is_pinned ? 1 : 0)
+                        )
 
-            items.forEach(s => {
-                const row = document.createElement('div')
-                row.className = `px-4 py-3 rounded-lg cursor-pointer text-sm ${
+                        items.forEach(s => {
+                            const row = document.createElement('div')
+                            row.className = `px-4 py-3 rounded-lg cursor-pointer text-sm ${
                 activeSession === s.session_token
                     ? 'bg-white/10 text-white'
                     : 'text-gray-400 hover:text-white hover:bg-white/5'
             }`
 
-                row.innerHTML = `
+                            row.innerHTML = `
 <div class="flex items-center justify-between gap-3">
     <div class="truncate flex-1">${escapeHtml(s.title || 'Percakapan Baru')}</div>
     <div class="relative flex-shrink-0">
@@ -726,85 +821,85 @@ function renderAssistant(raw) {
         </div>
     </div>
 </div>`
-                row.onclick = () => openSession(s.session_token)
-                sessionList.appendChild(row)
-            })
-        })
-    }
+                            row.onclick = () => openSession(s.session_token)
+                            sessionList.appendChild(row)
+                        })
+                    })
+                }
 
-    function openSession(token, push = true) {
-        closeAllSessionMenus()
-        activeSession = token
-        isCreatingSession = false
-        messageContainer.innerHTML = ''
-        welcomeView.style.display = 'none'
-        if (push) setUrl(token)
-        loadSessions()
+                function openSession(token, push = true) {
+                    closeAllSessionMenus()
+                    activeSession = token
+                    isCreatingSession = false
+                    messageContainer.innerHTML = ''
+                    welcomeView.style.display = 'none'
+                    if (push) setUrl(token)
+                    loadSessions()
 
-        axios.get(`/ai-agent/sessions/${token}`).then(res => {
-            messageContainer.innerHTML = ''
-            welcomeView.style.display = 'none'
-            res.data.messages.forEach(m =>
-                m.role === 'user'
-                    ? appendUser(m.content)
-                    : appendAssistant(m.content)
-            )
-        })
-    }
+                    axios.get(`/ai-agent/sessions/${token}`).then(res => {
+                        messageContainer.innerHTML = ''
+                        welcomeView.style.display = 'none'
+                        res.data.messages.forEach(m =>
+                            m.role === 'user'
+                                ? appendUser(m.content)
+                                : appendAssistant(m.content)
+                        )
+                    })
+                }
 
-    function createNewChat() {
-        if (isCreatingSession) return Promise.resolve()
-        isCreatingSession = true
+                function createNewChat() {
+                    if (isCreatingSession) return Promise.resolve()
+                    isCreatingSession = true
 
-        return axios.post('/ai-agent/sessions')
-            .then(r => {
-                activeSession = r.data.session_token
-                setUrl(activeSession)
-                messageContainer.innerHTML = ''
-                welcomeView.style.display = 'block'
-                loadSessions()
-            })
-            .finally(() => isCreatingSession = false)
-    }
+                    return axios.post('/ai-agent/sessions')
+                        .then(r => {
+                            activeSession = r.data.session_token
+                            setUrl(activeSession)
+                            messageContainer.innerHTML = ''
+                            welcomeView.style.display = 'block'
+                            loadSessions()
+                        })
+                        .finally(() => isCreatingSession = false)
+                }
 
-    function sendMessage(text) {
-        appendUser(text)
-        appendThinking()
-        sendBtn.disabled = true
+                function sendMessage(text) {
+                    appendUser(text)
+                    appendThinking()
+                    sendBtn.disabled = true
 
-        axios.post(`/ai-agent/sessions/${activeSession}/message`, { content: text })
-            .then(res => {
-                removeThinking()
-                appendAssistant(res.data.content)
-                loadSessions()
-            })
-            .catch(err => {
-                removeThinking()
-                appendAssistant(err.response?.data?.content || 'Permintaan tidak dapat diproses.')
-            })
-            .finally(() => {
-                sendBtn.disabled = false
-            })
-    }
+                    axios.post(`/ai-agent/sessions/${activeSession}/message`, { content: text })
+                        .then(res => {
+                            removeThinking()
+                            appendAssistant(res.data.content)
+                            loadSessions()
+                        })
+                        .catch(err => {
+                            removeThinking()
+                            appendAssistant(err.response?.data?.content || 'Permintaan tidak dapat diproses.')
+                        })
+                        .finally(() => {
+                            sendBtn.disabled = false
+                        })
+                }
 
-    chatForm.addEventListener('submit', async e => {
-        e.preventDefault()
+                chatForm.addEventListener('submit', async e => {
+                    e.preventDefault()
 
-        const text = chatInput.value.trim()
-        if (!text) return
+                    const text = chatInput.value.trim()
+                    if (!text) return
 
-        chatInput.value = ''
+                    chatInput.value = ''
 
-        if (!activeSession) {
-            await createNewChat()
-        }
+                    if (!activeSession) {
+                        await createNewChat()
+                    }
 
-        sendMessage(text)
-    })
+                    sendMessage(text)
+                })
 
-    chatInput.addEventListener('input', () => {
-        sendBtn.disabled = !chatInput.value.trim()
-    })
+                chatInput.addEventListener('input', () => {
+                    sendBtn.disabled = !chatInput.value.trim()
+                })
     </script>
 
     <script>
