@@ -276,6 +276,48 @@
             line-height: 1.7;
             margin-top: 6px;
         }
+
+        .ai-heading {
+    font-size: 17px;
+    font-weight: 700;
+    margin: 18px 0 10px;
+}
+
+.ai-text {
+    font-size: 15px;
+    line-height: 1.75;
+    color: #e5e7eb;
+}
+
+.ai-list {
+    margin-left: 18px;
+    margin-bottom: 12px;
+}
+
+.ai-list li {
+    margin-bottom: 6px;
+}
+
+.ai-inline-code {
+    background: rgba(255,255,255,0.08);
+    padding: 2px 6px;
+    border-radius: 6px;
+    font-size: 13px;
+}
+
+.ai-divider {
+    border: none;
+    border-top: 1px solid rgba(255,255,255,0.15);
+    margin: 16px 0;
+}
+
+.ai-tree {
+    background: rgba(255,255,255,0.05);
+    padding: 10px;
+    border-radius: 10px;
+    overflow-x: auto;
+}
+
     </style>
     <style>
         .thinking-dots span {
@@ -592,39 +634,47 @@
         const before = raw.slice(0, fenceIndex)
         const looksLikeCode =
             before.includes('<?php') ||
-        before.includes('namespace ') ||
-        before.includes('class ') ||
-        before.includes('function ') ||
-        (before.includes('{') && before.includes('}'))
+         before.includes('namespace ') ||
+         before.includes('class ') ||
+         before.includes('function ') ||
+         (before.includes('{') && before.includes('}'))
 
-    return looksLikeCode ? raw.slice(fenceIndex) : raw
+     return looksLikeCode ? raw.slice(fenceIndex) : raw
+ }
+
+ function copyCode(btn) {
+     const code = btn.closest('.ai-code-canvas')
+         ?.querySelector('pre code')
+         ?.innerText
+
+     if (!code) return
+
+     navigator.clipboard.writeText(code).then(() => {
+         btn.innerText = 'Copied'
+         setTimeout(() => btn.innerText = 'Copy', 1500)
+     })
+ }
+
+ function renderInline(text) {
+    return linkify(
+        escapeHtml(text)
+            .replace(/`([^`]+)`/g, '<code class="ai-inline-code">$1</code>')
+            .replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')
+    )
 }
 
-function copyCode(btn) {
-    const code = btn.closest('.ai-code-canvas')
-        ?.querySelector('pre code')
-        ?.innerText
-
-    if (!code) return
-
-    navigator.clipboard.writeText(code).then(() => {
-        btn.innerText = 'Copied'
-        setTimeout(() => btn.innerText = 'Copy', 1500)
-    })
-}
-
-function renderAssistant(raw) {
+ function renderAssistant(raw) {
     if (!raw) return ''
 
     raw = stripLeakedCode(normalizeAiResponse(raw))
 
     const parts = raw.split(/```/g)
-            let html = ''
-            let currentCard = null
+    let html = ''
+    let currentCard = null
 
-            function flushCard() {
-                if (!currentCard) return
-                html += `
+    function flushCard() {
+        if (!currentCard) return
+        html += `
 <div class="ai-roadmap-card">
     <div class="ai-roadmap-header">
         ${currentCard.title}
@@ -633,18 +683,27 @@ function renderAssistant(raw) {
         ${currentCard.body.join('')}
     </div>
 </div>`
-                currentCard = null
-            }
+        currentCard = null
+    }
 
-            parts.forEach((block, index) => {
-                if (index % 2 === 1) {
-                    flushCard()
+    function renderInline(text) {
+        return linkify(
+            escapeHtml(text)
+                .replace(/`([^`]+)`/g, '<code class="ai-inline-code">$1</code>')
+                .replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')
+        )
+    }
 
-                    const lines = block.split('\n')
-                    const lang = (lines.shift() || 'code').trim()
-                    const code = lines.join('\n').trim()
+    parts.forEach((block, index) => {
+        // ================= CODE BLOCK =================
+        if (index % 2 === 1) {
+            flushCard()
 
-                    html += `
+            const lines = block.split('\n')
+            const lang = (lines.shift() || 'code').trim()
+            const code = lines.join('\n')
+
+            html += `
 <div class="ai-code-canvas">
     <div class="ai-code-header">
         <span>${escapeHtml(lang.toUpperCase())}</span>
@@ -652,79 +711,97 @@ function renderAssistant(raw) {
     </div>
     <pre><code>${escapeHtml(code)}</code></pre>
 </div>`
-                    return
-                }
-
-                block.split('\n').forEach(line => {
-                    const t = line.trim()
-                    if (!t) return
-
-                    const stepMatch = t.match(/^###\s*\d+\.\s*(.+)/i)
-                    const sectionMatch = t.match(/^-\s*\*\*(.+?)\*\*/)
-
-                    if (stepMatch) {
-                        flushCard()
-                        currentCard = {
-                            title: `🧭 ${escapeHtml(stepMatch[1])}`,
-                            body: []
-                        }
-                        return
-                    }
-
-                    if (sectionMatch && currentCard) {
-                        currentCard.body.push(`
-<div class="ai-roadmap-section">
-    <div class="ai-roadmap-section-title">
-        ${escapeHtml(sectionMatch[1])}
-    </div>
-</div>`)
-                        return
-                    }
-
-                    if (t.startsWith('- ') && currentCard) {
-                        currentCard.body.push(`
-<div class="ai-roadmap-item">
-    • ${linkify(escapeHtml(t.slice(2)))}
-</div>`)
-                        return
-                    }
-
-                    if (currentCard) {
-                        currentCard.body.push(`
-<p class="ai-roadmap-text">
-    ${linkify(escapeHtml(t))}
-</p>`)
-                        return
-                    }
-
-                    html += `
-<p class="ai-text">
-    ${linkify(escapeHtml(t).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>'))}
-</p>`
-                })
-            })
-
-            flushCard()
-            return html
+            return
         }
 
-                function scrollBottom() {
-                    viewport.scrollTo({ top: viewport.scrollHeight, behavior: 'smooth' })
-                }
+        // ================= TEXT BLOCK =================
+        block.split('\n').forEach(line => {
+            const t = line.trim()
+            if (!t) return
 
-                function appendUser(content) {
-                    welcomeView.style.display = 'none'
-                    const el = document.createElement('div')
-                    el.className = 'flex justify-end'
-                    el.innerHTML = `<div class="user-message">${escapeHtml(content)}</div>`
-                    messageContainer.appendChild(el)
-                    scrollBottom()
+            // ---------- Roadmap Step: ### 1. Title
+            const stepMatch = t.match(/^###\s*\d+\.\s*(.+)/)
+            if (stepMatch) {
+                flushCard()
+                currentCard = {
+                    title: `🧭 ${escapeHtml(stepMatch[1])}`,
+                    body: []
                 }
+                return
+            }
 
-                function appendAssistant(content) {
-                    const el = document.createElement('div')
-                    el.className = 'ai-message flex gap-5'
-                    el.innerHTML = `
+            // ---------- Normal Heading: ### Title
+            const headingMatch = t.match(/^###\s+(.+)/)
+            if (headingMatch && !stepMatch) {
+                flushCard()
+                html += `
+<h3 class="ai-heading">
+    ${escapeHtml(headingMatch[1])}
+</h3>`
+                return
+            }
+
+            // ---------- Section title inside card: - **Title**
+            const sectionMatch = t.match(/^-\s*\*\*(.+?)\*\*/)
+            if (sectionMatch && currentCard) {
+                currentCard.body.push(`
+<div class="ai-roadmap-section-title">
+    ${escapeHtml(sectionMatch[1])}
+</div>`)
+                return
+            }
+
+            // ---------- Bullet item inside card
+            if (t.startsWith('- ') && currentCard) {
+                currentCard.body.push(`
+<div class="ai-roadmap-item">
+    • ${renderInline(t.slice(2))}
+</div>`)
+                return
+            }
+
+            // ---------- Text inside card
+            if (currentCard) {
+                currentCard.body.push(`
+<p class="ai-roadmap-text">
+    ${renderInline(t)}
+</p>`)
+                return
+            }
+
+            // ---------- Normal paragraph (outside card)
+            html += `
+<p class="ai-text">
+    ${renderInline(t)}
+</p>`
+        })
+    })
+
+    flushCard()
+    return html
+}
+
+
+     function scrollBottom() {
+         viewport.scrollTo({
+             top: viewport.scrollHeight,
+             behavior: 'smooth'
+         })
+     }
+
+     function appendUser(content) {
+         welcomeView.style.display = 'none'
+         const el = document.createElement('div')
+         el.className = 'flex justify-end'
+         el.innerHTML = `<div class="user-message">${escapeHtml(content)}</div>`
+         messageContainer.appendChild(el)
+         scrollBottom()
+     }
+
+     function appendAssistant(content) {
+         const el = document.createElement('div')
+         el.className = 'ai-message flex gap-5'
+         el.innerHTML = `
 <div class="w-9 h-9 rounded-full bg-white flex items-center justify-center">
     <i class="fas fa-shield-halved text-black text-xs"></i>
 </div>
@@ -736,14 +813,14 @@ function renderAssistant(raw) {
         ${renderAssistant(content)}
     </div>
 </div>`
-                    messageContainer.appendChild(el)
-                    scrollBottom()
-                }
+         messageContainer.appendChild(el)
+         scrollBottom()
+     }
 
-                function appendThinking() {
-                    const el = document.createElement('div')
-                    el.className = 'ai-message flex gap-5'
-                    el.innerHTML = `
+     function appendThinking() {
+         const el = document.createElement('div')
+         el.className = 'ai-message flex gap-5'
+         el.innerHTML = `
 <div class="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center">
     <i class="fas fa-spinner fa-spin text-xs text-white/70"></i>
 </div>
@@ -753,54 +830,54 @@ function renderAssistant(raw) {
     </p>
     <div class="text-gray-400 italic">Menganalisis permintaan keamanan...</div>
 </div>`
-                    messageContainer.appendChild(el)
-                    thinkingEl = el
-                    scrollBottom()
-                }
+         messageContainer.appendChild(el)
+         thinkingEl = el
+         scrollBottom()
+     }
 
-                function removeThinking() {
-                    if (thinkingEl) thinkingEl.remove()
-                    thinkingEl = null
-                }
+     function removeThinking() {
+         if (thinkingEl) thinkingEl.remove()
+         thinkingEl = null
+     }
 
-                function closeAllSessionMenus() {
-                    document.querySelectorAll('[data-session-menu]')
-                        .forEach(m => m.classList.add('hidden'))
-                    openMenuToken = null
-                }
+     function closeAllSessionMenus() {
+         document.querySelectorAll('[data-session-menu]')
+             .forEach(m => m.classList.add('hidden'))
+         openMenuToken = null
+     }
 
-                function toggleSessionMenu(e, token) {
-                    e.stopPropagation()
-                    const menu = document.querySelector(`[data-session-menu="${token}"]`)
-                    if (!menu) return
+     function toggleSessionMenu(e, token) {
+         e.stopPropagation()
+         const menu = document.querySelector(`[data-session-menu="${token}"]`)
+         if (!menu) return
 
-                    if (openMenuToken && openMenuToken !== token) closeAllSessionMenus()
+         if (openMenuToken && openMenuToken !== token) closeAllSessionMenus()
 
-                    const hidden = menu.classList.contains('hidden')
-                    closeAllSessionMenus()
+         const hidden = menu.classList.contains('hidden')
+         closeAllSessionMenus()
 
-                    if (hidden) {
-                        menu.classList.remove('hidden')
-                        openMenuToken = token
-                    }
-                }
+         if (hidden) {
+             menu.classList.remove('hidden')
+             openMenuToken = token
+         }
+     }
 
-                function loadSessions() {
-                    axios.get('/ai-agent/sessions').then(res => {
-                        sessionList.innerHTML = ''
-                        const items = (res.data || []).slice().sort(
-                            (a, b) => (b.is_pinned ? 1 : 0) - (a.is_pinned ? 1 : 0)
-                        )
+     function loadSessions() {
+         axios.get('/ai-agent/sessions').then(res => {
+             sessionList.innerHTML = ''
+             const items = (res.data || []).slice().sort(
+                 (a, b) => (b.is_pinned ? 1 : 0) - (a.is_pinned ? 1 : 0)
+             )
 
-                        items.forEach(s => {
-                            const row = document.createElement('div')
-                            row.className = `px-4 py-3 rounded-lg cursor-pointer text-sm ${
+             items.forEach(s => {
+                 const row = document.createElement('div')
+                 row.className = `px-4 py-3 rounded-lg cursor-pointer text-sm ${
                 activeSession === s.session_token
                     ? 'bg-white/10 text-white'
                     : 'text-gray-400 hover:text-white hover:bg-white/5'
             }`
 
-                            row.innerHTML = `
+                 row.innerHTML = `
 <div class="flex items-center justify-between gap-3">
     <div class="truncate flex-1">${escapeHtml(s.title || 'Percakapan Baru')}</div>
     <div class="relative flex-shrink-0">
@@ -821,85 +898,87 @@ function renderAssistant(raw) {
         </div>
     </div>
 </div>`
-                            row.onclick = () => openSession(s.session_token)
-                            sessionList.appendChild(row)
-                        })
-                    })
-                }
+                 row.onclick = () => openSession(s.session_token)
+                 sessionList.appendChild(row)
+             })
+         })
+     }
 
-                function openSession(token, push = true) {
-                    closeAllSessionMenus()
-                    activeSession = token
-                    isCreatingSession = false
-                    messageContainer.innerHTML = ''
-                    welcomeView.style.display = 'none'
-                    if (push) setUrl(token)
-                    loadSessions()
+     function openSession(token, push = true) {
+         closeAllSessionMenus()
+         activeSession = token
+         isCreatingSession = false
+         messageContainer.innerHTML = ''
+         welcomeView.style.display = 'none'
+         if (push) setUrl(token)
+         loadSessions()
 
-                    axios.get(`/ai-agent/sessions/${token}`).then(res => {
-                        messageContainer.innerHTML = ''
-                        welcomeView.style.display = 'none'
-                        res.data.messages.forEach(m =>
-                            m.role === 'user'
-                                ? appendUser(m.content)
-                                : appendAssistant(m.content)
-                        )
-                    })
-                }
+         axios.get(`/ai-agent/sessions/${token}`).then(res => {
+             messageContainer.innerHTML = ''
+             welcomeView.style.display = 'none'
+             res.data.messages.forEach(m =>
+                 m.role === 'user' ?
+                 appendUser(m.content) :
+                 appendAssistant(m.content)
+             )
+         })
+     }
 
-                function createNewChat() {
-                    if (isCreatingSession) return Promise.resolve()
-                    isCreatingSession = true
+     function createNewChat() {
+         if (isCreatingSession) return Promise.resolve()
+         isCreatingSession = true
 
-                    return axios.post('/ai-agent/sessions')
-                        .then(r => {
-                            activeSession = r.data.session_token
-                            setUrl(activeSession)
-                            messageContainer.innerHTML = ''
-                            welcomeView.style.display = 'block'
-                            loadSessions()
-                        })
-                        .finally(() => isCreatingSession = false)
-                }
+         return axios.post('/ai-agent/sessions')
+             .then(r => {
+                 activeSession = r.data.session_token
+                 setUrl(activeSession)
+                 messageContainer.innerHTML = ''
+                 welcomeView.style.display = 'block'
+                 loadSessions()
+             })
+             .finally(() => isCreatingSession = false)
+     }
 
-                function sendMessage(text) {
-                    appendUser(text)
-                    appendThinking()
-                    sendBtn.disabled = true
+     function sendMessage(text) {
+         appendUser(text)
+         appendThinking()
+         sendBtn.disabled = true
 
-                    axios.post(`/ai-agent/sessions/${activeSession}/message`, { content: text })
-                        .then(res => {
-                            removeThinking()
-                            appendAssistant(res.data.content)
-                            loadSessions()
-                        })
-                        .catch(err => {
-                            removeThinking()
-                            appendAssistant(err.response?.data?.content || 'Permintaan tidak dapat diproses.')
-                        })
-                        .finally(() => {
-                            sendBtn.disabled = false
-                        })
-                }
+         axios.post(`/ai-agent/sessions/${activeSession}/message`, {
+                 content: text
+             })
+             .then(res => {
+                 removeThinking()
+                 appendAssistant(res.data.content)
+                 loadSessions()
+             })
+             .catch(err => {
+                 removeThinking()
+                 appendAssistant(err.response?.data?.content || 'Permintaan tidak dapat diproses.')
+             })
+             .finally(() => {
+                 sendBtn.disabled = false
+             })
+     }
 
-                chatForm.addEventListener('submit', async e => {
-                    e.preventDefault()
+     chatForm.addEventListener('submit', async e => {
+         e.preventDefault()
 
-                    const text = chatInput.value.trim()
-                    if (!text) return
+         const text = chatInput.value.trim()
+         if (!text) return
 
-                    chatInput.value = ''
+         chatInput.value = ''
 
-                    if (!activeSession) {
-                        await createNewChat()
-                    }
+         if (!activeSession) {
+             await createNewChat()
+         }
 
-                    sendMessage(text)
-                })
+         sendMessage(text)
+     })
 
-                chatInput.addEventListener('input', () => {
-                    sendBtn.disabled = !chatInput.value.trim()
-                })
+     chatInput.addEventListener('input', () => {
+         sendBtn.disabled = !chatInput.value.trim()
+     })
     </script>
 
     <script>
