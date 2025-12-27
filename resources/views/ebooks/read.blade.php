@@ -276,7 +276,7 @@
         document.getElementById('pdf-render-container').appendChild(canvas);
 
         const pdfUrl = encodeURIComponent(
-            'https://panel.virologi.info/storage/ebooks/files/Yeac30ALqAiBIsCWHqs5HIWuLUgI78TLgZOHpdYG.pdf');
+            '{{ $ebook->file_path }}');
         const url = `/pdf-proxy?url=${pdfUrl}`;
 
         function renderPage(num) {
