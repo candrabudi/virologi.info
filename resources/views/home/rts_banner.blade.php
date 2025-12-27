@@ -64,7 +64,7 @@
                             alt=""
                             loading="lazy"
                             decoding="async"
-                            width="25"
+                            width="65"
                         >
                     </p>
 
