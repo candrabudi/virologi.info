@@ -132,7 +132,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         return `
             <div class="swiper-slide h-auto">
-                <a href="${url}" target="${target}" class="block h-full text-decoration-none text-dark">
+                <a href="/products/${p.slug}" target="${target}" class="block h-full text-decoration-none text-dark">
                     <div class="product-card">
                         <div class="product-thumb">
                             <img
