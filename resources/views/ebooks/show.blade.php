@@ -80,10 +80,9 @@
                                     <span>Baca E-Book</span>
                                 </a>
 
-                                {{-- DOWNLOAD --}}
-                                <button id="download-btn"
-                                    class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">
-                                    Download Ebook
+                                <button type="button" class="rts-btn btn-primary ebook-btn" id="download-btn">
+                                    <i class="fa-regular fa-download"></i>
+                                    <span>Download</span>
                                 </button>
                             </div>
                         @endif
