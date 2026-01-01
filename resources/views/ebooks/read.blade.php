@@ -242,21 +242,32 @@
             </main>
 
             <!-- MOBILE NAV -->
-            <nav class="md:hidden bg-white border-t border-slate-100 p-4 flex items-center justify-between px-8">
+            <nav
+                class="md:hidden fixed bottom-0 left-0 right-0
+           bg-white border-t border-slate-100
+           flex items-center justify-between
+           px-8 py-4
+           z-50">
                 <button id="mobile-prev" class="text-slate-900">
                     <i data-lucide="chevron-left" class="w-6 h-6"></i>
                 </button>
+
                 <div class="flex flex-col items-center">
-                    <span class="text-[9px] text-slate-400 uppercase font-bold tracking-tighter">Halaman</span>
+                    <span class="text-[9px] text-slate-400 uppercase font-bold tracking-tighter">
+                        Halaman
+                    </span>
                     <span class="text-[12px] font-black tracking-widest">
-                        <span id="mobile-current">1</span> <span class="text-slate-300 font-light">/</span> <span
-                            id="mobile-total">0</span>
+                        <span id="mobile-current">1</span>
+                        <span class="text-slate-300 font-light">/</span>
+                        <span id="mobile-total">0</span>
                     </span>
                 </div>
+
                 <button id="mobile-next" class="text-slate-900">
                     <i data-lucide="chevron-right" class="w-6 h-6"></i>
                 </button>
             </nav>
+
         </div>
 
         <!-- OVERLAY -->

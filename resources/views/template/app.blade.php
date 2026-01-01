@@ -16,7 +16,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    {{-- <link rel="shortcut icon" type="image/x-icon" href="{{ asset('assets/images/fav.png') }}"> --}}
     <title>@yield('title') | {{ $setting ? $setting->name : 'Default' }}</title>
     @stack('meta')
     <link rel="stylesheet preload" href="{{ asset('assets/css/plugins/fontawesome.css') }}" as="style">
@@ -46,30 +45,72 @@
                 <div class="col-lg-3">
                     <div class="footer-logo-area-left-8">
                         <a href="/" class="logo">
-                            <img src="{{ asset($footerSetting->logo_path ?? 'logo-2.png') }}" alt="Footer Logo">
+                            <img src="{{ asset($setting->logo_rectangle ?? 'logo-2.png') }}" alt="Footer Logo">
                         </a>
                         <p class="disc">
-                            {{ $footerSetting->description ?? '' }}
+                            {{ $setting->description ?? '' }}
                         </p>
                     </div>
                 </div>
 
-                <div class="offset-lg-1 col-lg-4">
+                <div class="offset-lg-1 col-lg-2">
                     <div class="footer-one-single-wized">
                         <div class="wized-title">
-                            <h5 class="title">Quick Links</h5>
+                            <h5 class="title">Menu</h5>
                             <img src="{{ asset('assets/images/footer/under-title.png') }}" alt="">
                         </div>
 
                         <div class="quick-link-inner">
                             <ul class="links">
-                                @foreach ($quickLinks as $link)
-                                    <li>
-                                        <a href="{{ $link->url }}">
-                                            <i class="far fa-arrow-right"></i> {{ $link->label }}
-                                        </a>
-                                    </li>
-                                @endforeach
+                                <li>
+                                    <a href="/">
+                                        <i class="far fa-arrow-right"></i> Home
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="/about-us">
+                                        <i class="far fa-arrow-right"></i> Tentang Kami
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="/producst">
+                                        <i class="far fa-arrow-right"></i> Produk
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="/services">
+                                        <i class="far fa-arrow-right"></i> Layanan
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-2">
+                    <div class="footer-one-single-wized">
+                        <div class="wized-title">
+                            <h5 class="title">&nbsp;</h5>
+                            <img src="{{ asset('assets/images/footer/under-title.png') }}" alt="">
+                        </div>
+
+                        <div class="quick-link-inner">
+                            <ul class="links">
+                                <li>
+                                    <a href="/ebooks">
+                                        <i class="far fa-arrow-right"></i> E-Book
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="/blog">
+                                        <i class="far fa-arrow-right"></i> Artikel
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="/ai-agent/chat">
+                                        <i class="far fa-arrow-right"></i> Agent AI
+                                    </a>
+                                </li>
                             </ul>
                         </div>
                     </div>
@@ -83,33 +124,18 @@
                         </div>
 
                         <div class="quick-link-inner d-block">
-                            @foreach ($contacts as $contact)
-                                <div class="signle-footer-contact-8">
-                                    <div class="icon">
-                                        @if ($contact->type === 'email')
-                                            <i class="fa-solid fa-envelope"></i>
-                                        @elseif ($contact->type === 'phone')
-                                            <i class="fa-solid fa-phone"></i>
-                                        @elseif ($contact->type === 'address')
-                                            <i class="fa-solid fa-location-dot"></i>
-                                        @else
-                                            <i class="fa-solid fa-circle-info"></i>
-                                        @endif
-                                    </div>
-
-                                    <div class="inner-content">
-                                        <h5 class="title">{{ $contact->label }}</h5>
-
-                                        @if ($contact->type === 'email')
-                                            <a href="mailto:{{ $contact->value }}">{{ $contact->value }}</a>
-                                        @elseif ($contact->type === 'phone')
-                                            <a href="tel:{{ $contact->value }}">{{ $contact->value }}</a>
-                                        @else
-                                            <span>{{ $contact->value }}</span>
-                                        @endif
-                                    </div>
+                            <div class="signle-footer-contact-8">
+                                <div class="icon">
+                                    <i class="fa-solid fa-envelope"></i>
                                 </div>
-                            @endforeach
+
+                                <div class="inner-content">
+                                    <h5 class="title">Email</h5>
+                                    <a href="mailto:overlord@virologi.info">
+                                        overlord@virologi.info
+                                    </a>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -117,12 +143,15 @@
             </div>
         </div>
 
+
         <div class="copyright-area-main-wrapper">
             <div class="container">
                 <div class="row">
                     <div class="col-lg-12">
                         <div class="copyright-8-wrapper">
-                            <p>{{ $footerSetting->copyright_text ?? '' }}</p>
+                            <p>
+                                © 2009–{{ now()->year }} {{ $setting->name ?? '' }}
+                            </p>
                             <ul>
                                 <li><a href="#">Copyright</a></li>
                                 <li><a href="#">Privacy Policy</a></li>
@@ -134,6 +163,7 @@
                 </div>
             </div>
         </div>
+
     </div>
 
     <div id="side-bar" class="side-bar header-two">

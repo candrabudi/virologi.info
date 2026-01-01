@@ -21,15 +21,12 @@ class HomeController extends Controller
         return view('home.index', compact('hero', 'blog', 'threatmap'));
     }
 
-    /* =========================
-       FETCH LATEST ARTICLES
-    ========================== */
     public function latestArticles(): JsonResponse
     {
         $articles = Article::with(['categories:id,name,slug', 'tags:id,name,slug'])
             ->where('is_published', true)
             ->whereNotNull('published_at')
-            ->orderByDesc('published_at')
+            ->inRandomOrder()
             ->limit(12)
             ->get()
             ->map(function ($article) {
@@ -59,17 +56,12 @@ class HomeController extends Controller
         ]);
     }
 
-    /* =========================
-       FETCH PRODUCTS (HOMEPAGE)
-    ========================== */
     public function homepageProducts(): JsonResponse
     {
         $products = Product::query()
             ->where('is_active', true)
             ->where('is_ai_visible', true)
-            ->orderByDesc('is_ai_recommended')
-            ->orderByDesc('ai_priority')
-            ->orderBy('sort_order')
+            ->inRandomOrder()
             ->limit(12)
             ->get([
                 'id',
@@ -91,15 +83,11 @@ class HomeController extends Controller
         ]);
     }
 
-    /* =========================
-       FETCH EBOOKS (HOMEPAGE)
-    ========================== */
     public function homepageEbooks(): JsonResponse
     {
         $ebooks = Ebook::query()
             ->where('is_active', true)
-            ->orderBy('sort_order')
-            ->orderByDesc('published_at')
+            ->inRandomOrder()
             ->limit(12)
             ->get([
                 'id',
