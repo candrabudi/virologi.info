@@ -375,7 +375,7 @@
                 thumb.innerHTML = `
                     <div class="flex items-center gap-4">
                         <span class="text-[10px] font-bold text-slate-300 w-4">${i}</span>
-                        <span class="text-[11px] font-medium text-slate-600">Materi ${i}</span>
+                        <span class="text-[11px] font-medium text-slate-600">Halaman ${i}</span>
                     </div>
                     <i data-lucide="chevron-right" class="w-3 h-3 text-slate-200"></i>
                 `;
@@ -422,7 +422,7 @@
         document.getElementById('download-btn').onclick = function() {
             const link = document.createElement('a');
             link.href = url;
-            link.download = 'Materi_Virologi_Lengkap.pdf';
+            link.download = 'Halaman_Virologi_Lengkap.pdf';
             link.style.display = 'none';
             document.body.appendChild(link);
             link.click();
