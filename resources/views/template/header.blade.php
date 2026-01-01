@@ -30,7 +30,7 @@
                                     <li class="main-nav"><a href="/services">Layanan</a></li>
                                     <li class="main-nav"><a href="/ebooks">E-Book</a></li>
                                     <li class="main-nav"><a href="/blog">Artikel</a></li>
-                                    <li class="main-nav"><a href="/ai-agent/chat">Agent AI</a></li>
+                                    <li class="main-nav"><a href="/ai-agent/chat">Konsultasi Online</a></li>
                                 </ul>
                             </nav>
 

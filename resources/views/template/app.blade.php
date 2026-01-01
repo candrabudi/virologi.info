@@ -108,7 +108,7 @@
                                 </li>
                                 <li>
                                     <a href="/ai-agent/chat">
-                                        <i class="far fa-arrow-right"></i> Agent AI
+                                        <i class="far fa-arrow-right"></i> Konsultasi Online
                                     </a>
                                 </li>
                             </ul>
@@ -206,7 +206,7 @@
                     <li><a href="/products" class="main">Produk</a></li>
                     <li><a href="/ebooks" class="main">E-Book</a></li>
                     <li><a href="/blog" class="main">Artikel</a></li>
-                    <li><a href="/ai-agent/chat" class="main">Agent AI</a></li>
+                    <li><a href="/ai-agent/chat" class="main">Konsultasi Online</a></li>
                     <li><a href="mailto:overlord@virologi.info" class="main">Contact Us</a></li>
                 </ul>
             </nav>
