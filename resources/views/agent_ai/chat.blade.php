@@ -423,27 +423,45 @@
 
     <!-- Main -->
     <main class="flex-1 flex flex-col h-full relative overflow-hidden">
-        <header class="h-20 flex items-center justify-between px-6 md:px-10 border-b border-white/5 backdrop-blur-md">
-            <div class="flex items-center gap-4">
+        <header class="h-20 flex items-center justify-between px-4 md:px-10 bg-black border-b border-white/10">
+
+            <!-- LEFT -->
+            <div class="flex items-center gap-3">
+                <!-- Mobile sidebar toggle -->
                 <button onclick="toggleMobileSidebar()"
-                    class="md:hidden w-10 h-10 rounded-full flex items-center justify-center hover:bg-white/5">
+                    class="md:hidden w-10 h-10 rounded-full flex items-center justify-center text-white hover:bg-white/10 transition">
                     <i class="fas fa-bars-staggered"></i>
                 </button>
-                <div class="hidden md:flex items-center gap-2">
-                    <span class="text-xs font-semibold text-gray-500 uppercase tracking-widest">Model:</span>
-                    <span
-                        class="text-xs font-bold text-white px-2 py-1 rounded bg-white/10 tracking-tight">Virologi-o1_Preview</span>
+
+                <!-- Back to home -->
+                <a href="/"
+                    class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold text-gray-200 hover:text-white hover:bg-white/10 transition whitespace-nowrap">
+                    <i class="fas fa-arrow-left text-xs"></i>
+                    <span>Beranda</span>
+                </a>
+
+                <!-- Model info (desktop only) -->
+                <div class="hidden md:flex items-center gap-2 ml-2">
+                    <span class="text-xs font-semibold text-gray-500 uppercase tracking-widest">
+                        Model:
+                    </span>
+                    <span class="text-xs font-bold text-white px-2 py-1 rounded bg-white/10 tracking-tight">
+                        Virologi-o1_Preview
+                    </span>
                 </div>
             </div>
 
+            <!-- RIGHT -->
             <div class="flex items-center gap-3">
                 <div
                     class="flex items-center gap-2 bg-emerald-500/10 text-emerald-400 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider border border-emerald-500/20">
-                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
                     Sistem Optimal
                 </div>
             </div>
+
         </header>
+
 
         <div id="chat-viewport" class="flex-1 overflow-y-auto px-4 md:px-10 py-10 custom-scroll">
             <div class="max-w-4xl mx-auto w-full">
@@ -658,30 +676,30 @@
     return linkify(
         escapeHtml(text)
             .replace(/`([^`]+)`/g, '<code class="ai-inline-code">$1</code>')
-                .replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')
-        )
-    }
+                    .replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')
+            )
+        }
 
-     function renderAssistant(raw) {
-        if (!raw) return ''
+         function renderAssistant(raw) {
+            if (!raw) return ''
 
-        raw = stripLeakedCode(normalizeAiResponse(raw))
+            raw = stripLeakedCode(normalizeAiResponse(raw))
 
-        const parts = raw.split(/```/g)
+            const parts = raw.split(/```/g)
     let html = ''
     let currentCard = null
 
     function flushCard() {
         if (!currentCard) return
         html += `
-    <div class="ai-roadmap-card">
-        <div class="ai-roadmap-header">
-            ${currentCard.title}
-        </div>
-        <div class="ai-roadmap-body">
-            ${currentCard.body.join('')}
-        </div>
-    </div>`
+        <div class="ai-roadmap-card">
+            <div class="ai-roadmap-header">
+                ${currentCard.title}
+            </div>
+            <div class="ai-roadmap-body">
+                ${currentCard.body.join('')}
+            </div>
+        </div>`
         currentCard = null
     }
 
@@ -689,20 +707,20 @@
         return linkify(
             escapeHtml(text)
                 .replace(/`([^`]+)`/g, '<code class="ai-inline-code">$1</code>')
-                    .replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')
-            )
-        }
+                        .replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')
+                )
+            }
 
-        parts.forEach((block, index) => {
-            // ================= CODE BLOCK =================
-            if (index % 2 === 1) {
-                flushCard()
+            parts.forEach((block, index) => {
+                // ================= CODE BLOCK =================
+                if (index % 2 === 1) {
+                    flushCard()
 
-                const lines = block.split('\n')
-                const lang = (lines.shift() || 'code').trim()
-                const code = lines.join('\n')
+                    const lines = block.split('\n')
+                    const lang = (lines.shift() || 'code').trim()
+                    const code = lines.join('\n')
 
-                html += `
+                    html += `
 <div class="ai-code-canvas">
     <div class="ai-code-header">
         <span>${escapeHtml(lang.toUpperCase())}</span>
@@ -710,97 +728,97 @@
     </div>
     <pre><code>${escapeHtml(code)}</code></pre>
 </div>`
-                return
-            }
-
-            // ================= TEXT BLOCK =================
-            block.split('\n').forEach(line => {
-                const t = line.trim()
-                if (!t) return
-
-                // ---------- Roadmap Step: ### 1. Title
-                const stepMatch = t.match(/^###\s*\d+\.\s*(.+)/)
-                if (stepMatch) {
-                    flushCard()
-                    currentCard = {
-                        title: `🧭 ${escapeHtml(stepMatch[1])}`,
-                        body: []
-                    }
                     return
                 }
 
-                // ---------- Normal Heading: ### Title
-                const headingMatch = t.match(/^###\s+(.+)/)
-                if (headingMatch && !stepMatch) {
-                    flushCard()
-                    html += `
+                // ================= TEXT BLOCK =================
+                block.split('\n').forEach(line => {
+                    const t = line.trim()
+                    if (!t) return
+
+                    // ---------- Roadmap Step: ### 1. Title
+                    const stepMatch = t.match(/^###\s*\d+\.\s*(.+)/)
+                    if (stepMatch) {
+                        flushCard()
+                        currentCard = {
+                            title: `🧭 ${escapeHtml(stepMatch[1])}`,
+                            body: []
+                        }
+                        return
+                    }
+
+                    // ---------- Normal Heading: ### Title
+                    const headingMatch = t.match(/^###\s+(.+)/)
+                    if (headingMatch && !stepMatch) {
+                        flushCard()
+                        html += `
 <h3 class="ai-heading">
     ${escapeHtml(headingMatch[1])}
 </h3>`
-                    return
-                }
+                        return
+                    }
 
-                // ---------- Section title inside card: - **Title**
-                const sectionMatch = t.match(/^-\s*\*\*(.+?)\*\*/)
-                if (sectionMatch && currentCard) {
-                    currentCard.body.push(`
+                    // ---------- Section title inside card: - **Title**
+                    const sectionMatch = t.match(/^-\s*\*\*(.+?)\*\*/)
+                    if (sectionMatch && currentCard) {
+                        currentCard.body.push(`
 <div class="ai-roadmap-section-title">
     ${escapeHtml(sectionMatch[1])}
 </div>`)
-                    return
-                }
+                        return
+                    }
 
-                // ---------- Bullet item inside card
-                if (t.startsWith('- ') && currentCard) {
-                    currentCard.body.push(`
+                    // ---------- Bullet item inside card
+                    if (t.startsWith('- ') && currentCard) {
+                        currentCard.body.push(`
 <div class="ai-roadmap-item">
     • ${renderInline(t.slice(2))}
 </div>`)
-                    return
-                }
+                        return
+                    }
 
-                // ---------- Text inside card
-                if (currentCard) {
-                    currentCard.body.push(`
+                    // ---------- Text inside card
+                    if (currentCard) {
+                        currentCard.body.push(`
 <p class="ai-roadmap-text">
     ${renderInline(t)}
 </p>`)
-                    return
-                }
+                        return
+                    }
 
-                // ---------- Normal paragraph (outside card)
-                html += `
+                    // ---------- Normal paragraph (outside card)
+                    html += `
 <p class="ai-text">
     ${renderInline(t)}
 </p>`
+                })
             })
-        })
 
-        flushCard()
-        return html
-    }
+            flushCard()
+            return html
+        }
 
 
-         function scrollBottom() {
-             viewport.scrollTo({
-                 top: viewport.scrollHeight,
-                 behavior: 'smooth'
-             })
-         }
+             function scrollBottom() {
+                 viewport.scrollTo({
+                     top: viewport.scrollHeight,
+                     behavior: 'smooth'
+                 })
+             }
 
-         function appendUser(content) {
-             welcomeView.style.display = 'none'
-             const el = document.createElement('div')
-             el.className = 'flex justify-end'
-             el.innerHTML = `<div class="user-message">${escapeHtml(content)}</div>`
-             messageContainer.appendChild(el)
-             scrollBottom()
-         }
+             function appendUser(content) {
+                 welcomeView.style.display = 'none'
+                 const el = document.createElement('div')
+                 el.className = 'flex justify-end'
+                 el.innerHTML = `<div class="user-message">${escapeHtml(content)}</div>`
+                 messageContainer.appendChild(el)
+                 scrollBottom()
+             }
 
-         function appendAssistant(content) {
-             const el = document.createElement('div')
-             el.className = 'ai-message flex gap-5'
-             el.innerHTML = `
+             function appendAssistant(content) {
+                 const el = document.createElement('div')
+                 el.className = 'ai-message flex gap-5'
+                 el.innerHTML = `
 <div class="w-9 h-9 rounded-full bg-white flex items-center justify-center">
     <i class="fas fa-shield-halved text-black text-xs"></i>
 </div>
@@ -812,14 +830,14 @@
         ${renderAssistant(content)}
     </div>
 </div>`
-             messageContainer.appendChild(el)
-             scrollBottom()
-         }
+                 messageContainer.appendChild(el)
+                 scrollBottom()
+             }
 
-         function appendThinking() {
-             const el = document.createElement('div')
-             el.className = 'ai-message flex gap-5'
-             el.innerHTML = `
+             function appendThinking() {
+                 const el = document.createElement('div')
+                 el.className = 'ai-message flex gap-5'
+                 el.innerHTML = `
 <div class="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center">
     <i class="fas fa-spinner fa-spin text-xs text-white/70"></i>
 </div>
@@ -829,54 +847,54 @@
     </p>
     <div class="text-gray-400 italic">Menganalisis permintaan keamanan...</div>
 </div>`
-             messageContainer.appendChild(el)
-             thinkingEl = el
-             scrollBottom()
-         }
-
-         function removeThinking() {
-             if (thinkingEl) thinkingEl.remove()
-             thinkingEl = null
-         }
-
-         function closeAllSessionMenus() {
-             document.querySelectorAll('[data-session-menu]')
-                 .forEach(m => m.classList.add('hidden'))
-             openMenuToken = null
-         }
-
-         function toggleSessionMenu(e, token) {
-             e.stopPropagation()
-             const menu = document.querySelector(`[data-session-menu="${token}"]`)
-             if (!menu) return
-
-             if (openMenuToken && openMenuToken !== token) closeAllSessionMenus()
-
-             const hidden = menu.classList.contains('hidden')
-             closeAllSessionMenus()
-
-             if (hidden) {
-                 menu.classList.remove('hidden')
-                 openMenuToken = token
+                 messageContainer.appendChild(el)
+                 thinkingEl = el
+                 scrollBottom()
              }
-         }
 
-         function loadSessions() {
-             axios.get('/ai-agent/sessions').then(res => {
-                 sessionList.innerHTML = ''
-                 const items = (res.data || []).slice().sort(
-                     (a, b) => (b.is_pinned ? 1 : 0) - (a.is_pinned ? 1 : 0)
-                 )
+             function removeThinking() {
+                 if (thinkingEl) thinkingEl.remove()
+                 thinkingEl = null
+             }
 
-                 items.forEach(s => {
-                     const row = document.createElement('div')
-                     row.className = `px-4 py-3 rounded-lg cursor-pointer text-sm ${
+             function closeAllSessionMenus() {
+                 document.querySelectorAll('[data-session-menu]')
+                     .forEach(m => m.classList.add('hidden'))
+                 openMenuToken = null
+             }
+
+             function toggleSessionMenu(e, token) {
+                 e.stopPropagation()
+                 const menu = document.querySelector(`[data-session-menu="${token}"]`)
+                 if (!menu) return
+
+                 if (openMenuToken && openMenuToken !== token) closeAllSessionMenus()
+
+                 const hidden = menu.classList.contains('hidden')
+                 closeAllSessionMenus()
+
+                 if (hidden) {
+                     menu.classList.remove('hidden')
+                     openMenuToken = token
+                 }
+             }
+
+             function loadSessions() {
+                 axios.get('/ai-agent/sessions').then(res => {
+                     sessionList.innerHTML = ''
+                     const items = (res.data || []).slice().sort(
+                         (a, b) => (b.is_pinned ? 1 : 0) - (a.is_pinned ? 1 : 0)
+                     )
+
+                     items.forEach(s => {
+                         const row = document.createElement('div')
+                         row.className = `px-4 py-3 rounded-lg cursor-pointer text-sm ${
                 activeSession === s.session_token
                     ? 'bg-white/10 text-white'
                     : 'text-gray-400 hover:text-white hover:bg-white/5'
             }`
 
-                     row.innerHTML = `
+                         row.innerHTML = `
 <div class="flex items-center justify-between gap-3">
     <div class="truncate flex-1">${escapeHtml(s.title || 'Percakapan Baru')}</div>
     <div class="relative flex-shrink-0">
@@ -897,87 +915,87 @@
         </div>
     </div>
 </div>`
-                     row.onclick = () => openSession(s.session_token)
-                     sessionList.appendChild(row)
+                         row.onclick = () => openSession(s.session_token)
+                         sessionList.appendChild(row)
+                     })
                  })
-             })
-         }
-
-         function openSession(token, push = true) {
-             closeAllSessionMenus()
-             activeSession = token
-             isCreatingSession = false
-             messageContainer.innerHTML = ''
-             welcomeView.style.display = 'none'
-             if (push) setUrl(token)
-             loadSessions()
-
-             axios.get(`/ai-agent/sessions/${token}`).then(res => {
-                 messageContainer.innerHTML = ''
-                 welcomeView.style.display = 'none'
-                 res.data.messages.forEach(m =>
-                     m.role === 'user' ?
-                     appendUser(m.content) :
-                     appendAssistant(m.content)
-                 )
-             })
-         }
-
-         function createNewChat() {
-             if (isCreatingSession) return Promise.resolve()
-             isCreatingSession = true
-
-             return axios.post('/ai-agent/sessions')
-                 .then(r => {
-                     activeSession = r.data.session_token
-                     setUrl(activeSession)
-                     messageContainer.innerHTML = ''
-                     welcomeView.style.display = 'block'
-                     loadSessions()
-                 })
-                 .finally(() => isCreatingSession = false)
-         }
-
-         function sendMessage(text) {
-             appendUser(text)
-             appendThinking()
-             sendBtn.disabled = true
-
-             axios.post(`/ai-agent/sessions/${activeSession}/message`, {
-                     content: text
-                 })
-                 .then(res => {
-                     removeThinking()
-                     appendAssistant(res.data.content)
-                     loadSessions()
-                 })
-                 .catch(err => {
-                     removeThinking()
-                     appendAssistant(err.response?.data?.content || 'Permintaan tidak dapat diproses.')
-                 })
-                 .finally(() => {
-                     sendBtn.disabled = false
-                 })
-         }
-
-         chatForm.addEventListener('submit', async e => {
-             e.preventDefault()
-
-             const text = chatInput.value.trim()
-             if (!text) return
-
-             chatInput.value = ''
-
-             if (!activeSession) {
-                 await createNewChat()
              }
 
-             sendMessage(text)
-         })
+             function openSession(token, push = true) {
+                 closeAllSessionMenus()
+                 activeSession = token
+                 isCreatingSession = false
+                 messageContainer.innerHTML = ''
+                 welcomeView.style.display = 'none'
+                 if (push) setUrl(token)
+                 loadSessions()
 
-         chatInput.addEventListener('input', () => {
-             sendBtn.disabled = !chatInput.value.trim()
-         })
+                 axios.get(`/ai-agent/sessions/${token}`).then(res => {
+                     messageContainer.innerHTML = ''
+                     welcomeView.style.display = 'none'
+                     res.data.messages.forEach(m =>
+                         m.role === 'user' ?
+                         appendUser(m.content) :
+                         appendAssistant(m.content)
+                     )
+                 })
+             }
+
+             function createNewChat() {
+                 if (isCreatingSession) return Promise.resolve()
+                 isCreatingSession = true
+
+                 return axios.post('/ai-agent/sessions')
+                     .then(r => {
+                         activeSession = r.data.session_token
+                         setUrl(activeSession)
+                         messageContainer.innerHTML = ''
+                         welcomeView.style.display = 'block'
+                         loadSessions()
+                     })
+                     .finally(() => isCreatingSession = false)
+             }
+
+             function sendMessage(text) {
+                 appendUser(text)
+                 appendThinking()
+                 sendBtn.disabled = true
+
+                 axios.post(`/ai-agent/sessions/${activeSession}/message`, {
+                         content: text
+                     })
+                     .then(res => {
+                         removeThinking()
+                         appendAssistant(res.data.content)
+                         loadSessions()
+                     })
+                     .catch(err => {
+                         removeThinking()
+                         appendAssistant(err.response?.data?.content || 'Permintaan tidak dapat diproses.')
+                     })
+                     .finally(() => {
+                         sendBtn.disabled = false
+                     })
+             }
+
+             chatForm.addEventListener('submit', async e => {
+                 e.preventDefault()
+
+                 const text = chatInput.value.trim()
+                 if (!text) return
+
+                 chatInput.value = ''
+
+                 if (!activeSession) {
+                     await createNewChat()
+                 }
+
+                 sendMessage(text)
+             })
+
+             chatInput.addEventListener('input', () => {
+                 sendBtn.disabled = !chatInput.value.trim()
+             })
     </script>
 
     <script>

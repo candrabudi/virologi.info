@@ -22,7 +22,8 @@
             background-size:cover;
             background-position:center;
         "
-        aria-label="{{ $ebook->title }}"></div>
+        aria-label="{{ $ebook->title }}">
+    </div>
 
     <div class="blog-details-area-main-wrapper mt-dec-180 mb-5">
         <div class="container">
@@ -34,7 +35,6 @@
 
                         {{-- META --}}
                         <div class="blog-details-top-wrapper">
-
                             <div class="single">
                                 <i class="fa-regular fa-book"></i>
                                 <span>{{ ucfirst($ebook->level) }}</span>
@@ -51,45 +51,15 @@
                                     <span>{{ $ebook->published_at->format('d M, Y') }}</span>
                                 </div>
                             @endif
-
                         </div>
 
                         {{-- TITLE --}}
                         <h1 class="title">{{ $ebook->title }}</h1>
 
-                        {{-- SUBTITLE --}}
-                        @if ($ebook->subtitle)
-                            <p class="disc">{{ $ebook->subtitle }}</p>
-                        @endif
-
                         {{-- SUMMARY --}}
                         @if ($ebook->summary)
                             <div class="article-content mt--20">
                                 <p>{{ $ebook->summary }}</p>
-                            </div>
-                        @endif
-
-                        {{-- LEARNING OBJECTIVES --}}
-                        @if (is_array($ebook->learning_objectives))
-                            <div class="mt--40">
-                                <h4>Apa yang akan dipelajari</h4>
-                                <ul>
-                                    @foreach ($ebook->learning_objectives as $obj)
-                                        <li>{{ $obj }}</li>
-                                    @endforeach
-                                </ul>
-                            </div>
-                        @endif
-
-                        {{-- CHAPTERS --}}
-                        @if (is_array($ebook->chapters))
-                            <div class="mt--40">
-                                <h4>Daftar Bab</h4>
-                                <ol>
-                                    @foreach ($ebook->chapters as $chapter)
-                                        <li>{{ $chapter }}</li>
-                                    @endforeach
-                                </ol>
                             </div>
                         @endif
 
@@ -100,12 +70,25 @@
                             </div>
                         @endif
 
-                        {{-- DOWNLOAD --}}
+                        {{-- ACTION BUTTONS --}}
                         @if ($ebook->file_path)
-                            <div class="mt--50">
-                                <a href="/ebooks/{{ $ebook->slug }}/read" class="rts-btn btn-primary" target="_blank">
-                                    Download E-Book ({{ strtoupper($ebook->file_type) }})
+                            <div class="ebook-action-inline mt-4">
+                                {{-- BACA --}}
+                                <a href="/ebooks/{{ $ebook->slug }}/read" target="_blank"
+                                    class="rts-btn btn-secondary ebook-btn">
+                                    <i class="fa-regular fa-book-open"></i>
+                                    <span>Baca E-Book</span>
                                 </a>
+
+                                {{-- DOWNLOAD --}}
+                                <button type="button" class="rts-btn btn-primary ebook-btn"
+                                    onclick="downloadEbook(
+                                            '{{ asset('storage/' . $ebook->file_path) }}',
+                                            '{{ Str::slug($ebook->title) }}.{{ $ebook->file_type }}'
+                                        )">
+                                    <i class="fa-regular fa-download"></i>
+                                    <span>Download</span>
+                                </button>
                             </div>
                         @endif
 
@@ -118,5 +101,57 @@
             </div>
         </div>
     </div>
+
+    {{-- CSS OVERRIDE --}}
+    <style>
+        .ebook-action-inline {
+            display: flex;
+            gap: 14px;
+            max-width: 520px;
+            /* biar agak panjang */
+        }
+
+        .ebook-action-inline .ebook-btn {
+            display: inline-flex !important;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100% !important;
+            padding: 12px 18px;
+            font-size: 14px;
+            font-weight: 600;
+            line-height: 1;
+            border-radius: 6px;
+        }
+
+        .ebook-action-inline .ebook-btn i {
+            font-size: 15px;
+        }
+    </style>
+
+    {{-- DOWNLOAD SCRIPT --}}
+    <script>
+        function downloadEbook(url, filename) {
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Gagal download file');
+                    }
+                    return response.blob();
+                })
+                .then(blob => {
+                    const link = document.createElement('a');
+                    link.href = URL.createObjectURL(blob);
+                    link.download = filename;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    URL.revokeObjectURL(link.href);
+                })
+                .catch(error => {
+                    alert(error.message);
+                });
+        }
+    </script>
 
 @endsection
