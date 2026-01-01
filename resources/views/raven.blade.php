@@ -1,1697 +1,927 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="id">
 
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>LIVE CYBER THREAT MAP</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>VIROLOGI - LIVE CYBER THREAT MAP</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- D3 & Datamaps Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/1.6.9/topojson.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/datamaps/0.5.9/datamaps.world.min.js"></script>
 
     <style>
-        @import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&display=swap");
-        @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
-
-        * {
-            box-sizing: border-box
-        }
-
-        .panel.mobile-attacks {
-            display: none;
-        }
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&family=JetBrains+Mono:wght@400;700&display=swap');
 
         :root {
-            --bg: #070b14;
-            --panel: #0b1220;
-            --panel2: #0a1020;
-
-            --grid: rgba(0, 180, 255, .10);
-            --dot: rgba(255, 255, 255, .10);
-
+            --bg: #03060b;
             --neon: #00b4ff;
-            --neon2: #38d4ff;
-
+            --red: #ff1e6d;
             --cyan: #00e5ff;
-            --green: #4ade80;
-            --red: #ff6b6b;
-
-            --text: #ffffff;
-            --muted: #94a3b8;
-            --muted2: #64748b;
-
-            --stroke: #1e293b;
-            --shadow: rgba(0, 0, 0, .6);
-
-            --glow: rgba(0, 180, 255, .35);
-            --glowC: rgba(56, 212, 255, .45);
-        }
-
-
-        html,
-        body {
-            height: 100%
+            --grid: rgba(0, 180, 255, .03);
         }
 
         body {
-            margin: 0;
-            background:
-                radial-gradient(1200px 800px at 50% 20%, rgba(0, 180, 255, .14), transparent 60%),
-                radial-gradient(1200px 800px at 55% 40%, rgba(0, 229, 255, .10), transparent 65%),
-                var(--bg);
-            font-family: Inter, system-ui, -apple-system, Segoe UI, sans-serif;
+            background-color: var(--bg);
+            color: #ffffff;
+            font-family: 'Plus Jakarta Sans', sans-serif;
             overflow: hidden;
-            color: var(--text);
+            margin: 0;
+            height: 100vh;
+            width: 100vw;
         }
 
-
+        /* Latar belakang grid futuristik */
         body::before {
             content: "";
             position: fixed;
             inset: 0;
-            background:
+            background-image:
                 linear-gradient(to right, var(--grid) 1px, transparent 1px),
-                radial-gradient(circle, var(--dot) 1px, transparent 1px);
-            background-size: 90px 90px, 22px 22px;
-            opacity: .35;
+                linear-gradient(to bottom, var(--grid) 1px, transparent 1px);
+            background-size: 40px 40px;
             pointer-events: none;
-            z-index: 1
+            z-index: 1;
         }
 
-        body::after {
-            content: "";
-            position: fixed;
-            inset: 0;
-            background:
-                linear-gradient(to bottom, rgba(0, 0, 0, .55), transparent 30%, transparent 70%, rgba(0, 0, 0, .65));
-            pointer-events: none;
-            z-index: 1
-        }
-
-        #app {
-            position: relative;
-            width: 100vw;
-            height: 100vh;
-            z-index: 2
-        }
-
-        .topbar {
+        #map-container {
             position: absolute;
             top: 0;
             left: 0;
-            right: 0;
-            height: 92px;
-            display: grid;
-            grid-template-columns: 340px 1fr 340px;
-            align-items: center;
-            padding: 14px 24px;
-            border-top: 5px solid var(--neon);
-            background: linear-gradient(to bottom, rgba(10, 10, 14, .88), rgba(10, 10, 14, .35));
-            backdrop-filter: blur(12px);
-            z-index: 50
-        }
-
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            user-select: none
-        }
-
-        .brand-badge {
-            background: radial-gradient(circle at 30% 30%, rgba(0, 180, 255, .95), rgba(0, 180, 255, .25));
-            box-shadow:
-                0 0 28px rgba(0, 180, 255, .55),
-                inset 0 0 18px rgba(0, 0, 0, .35);
-        }
-
-        .brand-badge::before {
-            content: "";
-            position: absolute;
-            inset: 10px;
-            border-radius: 10px;
-            border: 2px solid rgba(255, 255, 255, .18)
-        }
-
-        .brand-name {
-            font-family: "JetBrains Mono", monospace;
-            letter-spacing: .22em;
-            font-weight: 700;
-            font-size: 16px
-        }
-
-        .brand-sub {
-            font-size: 11px;
-            color: var(--muted2);
-            letter-spacing: .18em;
-            margin-top: 2px
-        }
-
-        .centerTitle {
-            text-align: center;
-            user-select: none
-        }
-
-        .centerTitle h1 {
-            margin: 0;
-            font-family: "JetBrains Mono", monospace;
-            font-size: 26px;
-            letter-spacing: .22em;
-            font-weight: 700
-        }
-
-        .centerTitle p {
-            margin: 6px 0 0 0;
-            font-family: "JetBrains Mono", monospace;
-            letter-spacing: .08em;
-            color: var(--neon);
-            font-weight: 600
-        }
-
-        .cta {
-            justify-self: end;
-            border: 1px solid rgba(0, 180, 255, .85);
-            background: linear-gradient(135deg,
-                    rgba(0, 180, 255, .18),
-                    rgba(0, 0, 0, .12));
-            box-shadow:
-                0 0 0 1px rgba(0, 180, 255, .18),
-                0 10px 30px rgba(0, 0, 0, .45);
-            padding: 10px 12px;
-            border-radius: 10px;
-            font-family: "JetBrains Mono", monospace;
-            text-transform: uppercase;
-            font-size: 12px;
-            line-height: 1.2;
-            letter-spacing: .08em;
-            color: #fff;
-            text-align: right;
-            user-select: none
-        }
-
-        .cta span {
-            display: inline-block;
-            margin-top: 6px;
-            color: var(--neon);
-            font-weight: 700
-        }
-
-        .shell {
-            position: absolute;
-            top: 92px;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            display: grid;
-            grid-template-columns: 340px 1fr 340px;
-            gap: 18px;
-            padding: 18px 18px 18px 18px
-        }
-
-        .panel {
-            background: linear-gradient(to bottom, rgba(17, 17, 24, .92), rgba(17, 17, 24, .55));
-            border: 1px solid rgba(255, 255, 255, .06);
-            border-radius: 16px;
-            box-shadow: 0 18px 40px rgba(0, 0, 0, .45);
-            backdrop-filter: blur(12px);
-            overflow: hidden;
-            position: relative
-        }
-
-        .panel::before {
-            content: "";
-            position: absolute;
-            inset: 0;
-            background:
-                radial-gradient(900px 500px at 20% 0%, rgba(0, 180, 255, .22), transparent 60%),
-                radial-gradient(700px 400px at 80% 0%, rgba(0, 229, 255, .18), transparent 60%);
-            pointer-events: none
-        }
-
-        .panelInner {
-            position: relative;
-            height: 100%;
-            padding: 14px 14px 12px 14px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px
-        }
-
-        .panelTitle {
-            font-family: "JetBrains Mono", monospace;
-            font-size: 12px;
-            letter-spacing: .14em;
-            color: rgba(255, 255, 255, .88);
-            text-transform: uppercase;
-            display: flex;
-            align-items: center;
-            justify-content: space-between
-        }
-
-        .panelTitle small {
-            color: var(--muted2);
-            letter-spacing: .10em;
-            font-weight: 500
-        }
-
-        .divider {
-            height: 1px;
-            background: linear-gradient(to right, transparent, rgba(255, 255, 255, .10), transparent)
-        }
-
-        .canvasWrap {
-            border-radius: 14px;
-            border: 1px solid rgba(255, 255, 255, .06);
-            background: linear-gradient(135deg, rgba(255, 30, 109, .10), rgba(0, 0, 0, .12));
-            padding: 10px
-        }
-
-        #miniChart {
             width: 100%;
-            height: 130px;
-            display: block
+            height: 100%;
+            z-index: 0;
+            cursor: grab;
+            background: radial-gradient(circle at center, #0a1322 0%, #03060b 100%);
         }
 
-        .attackHeader {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 10px
-        }
-
-        .attackHeader .rate {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-family: "JetBrains Mono", monospace;
-            font-size: 12px;
-            color: var(--muted)
-        }
-
-        .pill {
-            padding: 6px 10px;
-            border-radius: 999px;
-            border: 1px solid rgba(255, 255, 255, .08);
-            background: rgba(0, 0, 0, .12);
-            color: rgba(255, 255, 255, .85)
-        }
-
-        .stepper {
-            display: flex;
-            align-items: center;
-            gap: 8px
-        }
-
-        .stepper button {
-            width: 28px;
-            height: 28px;
-            border-radius: 10px;
-            border: 1px solid rgba(255, 255, 255, .08);
-            background: rgba(0, 0, 0, .12);
-            color: #fff;
-            cursor: pointer;
-            font-weight: 700;
-            line-height: 1
-        }
-
-        .stepper button:active {
-            transform: scale(.97)
-        }
-
-        #attackdiv {
-            flex: 1;
-            min-height: 0;
-            border-radius: 14px;
-            border: 1px solid rgba(255, 255, 255, .06);
-            background: linear-gradient(135deg, rgba(0, 0, 0, .22), rgba(0, 0, 0, .06));
-            padding: 10px;
-            overflow: auto;
-            font-family: "JetBrains Mono", monospace;
-            font-size: 12px;
-            line-height: 1.6
-        }
-
-        #attackdiv::-webkit-scrollbar {
-            width: 6px
-        }
-
-        #attackdiv::-webkit-scrollbar-track {
-            background: rgba(0, 180, 255, .85);
-            border-radius: 999px
-        }
-
-        #attackdiv::-webkit-scrollbar-thumb {
-            background: rgba(0, 229, 255, .95);
-            border-radius: 999px
-        }
-
-        #attackdiv::-webkit-scrollbar-thumb:hover {
-            background: rgba(0, 229, 255, .95);
-        }
-
-        .attack-source {
-            color: var(--neon2);
-            font-weight: 600
-        }
-
-        .attack-target {
-            color: var(--green);
-            font-weight: 600
-        }
-
-        .attack-type {
-            color: var(--cyan);
-            font-weight: 500
-        }
-
-        .attack-ip {
-            color: rgba(255, 255, 255, .72)
-        }
-
-        .list {
-            display: flex;
-            flex-direction: column;
-            gap: 8px
-        }
-
-        .item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-            padding: 10px 10px;
-            border-radius: 14px;
-            border: 1px solid rgba(255, 255, 255, .06);
-            background: rgba(0, 0, 0, .12)
-        }
-
-        .item .left {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            min-width: 0
-        }
-
-        .dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 999px;
-            background: rgba(255, 255, 255, .25);
-            box-shadow: 0 0 0 6px rgba(255, 255, 255, .06)
-        }
-
-        .flag {
-            width: 26px;
-            height: 18px;
-            border-radius: 6px;
-            border: 1px solid rgba(255, 255, 255, .10);
-            background: rgba(255, 255, 255, .06);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px
-        }
-
-        .name {
-            font-size: 13px;
-            color: rgba(255, 255, 255, .90);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis
-        }
-
-        .meta {
-            font-family: "JetBrains Mono", monospace;
-            font-size: 12px;
-            color: var(--muted);
-            white-space: nowrap
-        }
-
-        .mapWrap {
-            position: relative;
-            border-radius: 16px;
-            border: 1px solid rgba(255, 255, 255, .06);
-            overflow: hidden;
-            box-shadow: 0 18px 40px rgba(0, 0, 0, .45);
-            background: linear-gradient(180deg, rgba(0, 0, 0, .25), rgba(0, 0, 0, .10));
-            min-height: 0;
-        }
-
-        #container1 {
-            position: absolute;
-            inset: 0
-        }
-
-        .legend {
-            position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
-            bottom: 18px;
-            display: flex;
-            align-items: center;
-            gap: 18px;
-            padding: 10px 12px;
-            border-radius: 999px;
-            border: 1px solid rgba(255, 255, 255, .08);
-            background: rgba(10, 10, 14, .55);
-            backdrop-filter: blur(12px);
-            z-index: 10
-        }
-
-        .leg {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-family: "JetBrains Mono", monospace;
-            font-size: 12px;
-            color: rgba(255, 255, 255, .85)
-        }
-
-        .leg i {
-            width: 12px;
-            height: 12px;
-            border-radius: 999px;
-            display: inline-block;
-            box-shadow: 0 0 0 6px rgba(255, 255, 255, .06)
-        }
-
-        .leg .m {
-            background: #00b4ff;
-        }
-
-        .leg .p {
-            background: #38d4ff;
-        }
-
-        .leg .e {
-            background: #22d3ee;
-        }
-
-        .hoverinfo {
-            color: #fff !important;
-            background: rgba(16, 16, 24, .92) !important;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, .10) !important;
-            border-radius: 10px !important;
-            padding: 10px 12px !important;
-            font-family: Inter, sans-serif !important;
-            font-size: 13px !important;
-            box-shadow: 0 18px 40px rgba(0, 0, 0, .45) !important
+        #map-container:active {
+            cursor: grabbing;
         }
 
         .datamaps-subunit {
-            stroke: rgba(255, 255, 255, .12) !important;
-            stroke-width: .7px !important;
-            stroke-dasharray: 2, 4 !important;
-            fill: rgba(255, 255, 255, .06) !important
+            fill: rgba(15, 25, 45, 0.7) !important;
+            stroke: rgba(0, 180, 255, 0.2) !important;
+            stroke-width: 0.8px !important;
         }
 
-        @keyframes impact-pulse {
-            0% {
-                r: 0;
-                opacity: 1
-            }
-
-            55% {
-                opacity: .55
-            }
-
-            100% {
-                r: 26;
-                opacity: 0
-            }
+        /* Panel Header Kiri Atas */
+        #header-panel {
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 100;
+            background: rgba(8, 12, 20, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 180, 255, 0.15);
+            padding: 12px;
+            border-radius: 6px;
+            width: 260px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
         }
 
-        @keyframes impact-core {
-            0% {
-                r: 0;
-                opacity: 1
-            }
-
-            60% {
-                r: 9;
-                opacity: 1
-            }
-
-            100% {
-                r: 13;
-                opacity: 0
-            }
+        .header-title {
+            font-weight: 700;
+            font-size: 11px;
+            color: var(--neon);
+            letter-spacing: 0.5px;
+            margin-bottom: 2px;
+            text-transform: uppercase;
         }
 
-        .impact-ripple {
-            animation: impact-pulse 2.05s ease-out forwards;
-            stroke-width: 2;
-            fill: none;
-            pointer-events: none
+        .header-subtitle {
+            font-size: 9px;
+            color: #64748b;
+            margin-bottom: 8px;
+            line-height: 1.2;
         }
 
-        .impact-core {
-            animation: impact-core 1.55s ease-out forwards;
-            pointer-events: none
-        }
-
-        .impact-glow {
-            filter: url(#glow)
-        }
-
-        @media (max-width:1100px) {
-
-            body {
-                overflow-y: auto;
-            }
-
-            .topbar {
-                grid-template-columns: 1fr;
-                height: auto;
-            }
-
-            .brand,
-            .cta {
-                display: none;
-            }
-
-            .shell {
-                grid-template-columns: 1fr;
-                gap: 12px;
-                padding: 12px;
-            }
-
-            .panel {
-                display: block;
-            }
-
-            .panel.left,
-            .panel.right {
-                display: none;
-            }
-
-            .panel.mobile-attacks {
-                display: block;
-            }
-
-            .mapWrap {
-                height: 62vh;
-            }
-
-            #container1 {
-                transform: scale(1.35) translateY(-6%);
-                transform-origin: center center;
-            }
-        }
-
-
-        .country-panel {
-            position: absolute;
-            top: 140px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 320px;
-            background: linear-gradient(to bottom, #0b0b10, #050509);
-            border: 1px solid rgba(255, 255, 255, .08);
-            border-left: 6px solid #ff1e6d;
-            border-radius: 14px;
-            box-shadow: 0 30px 80px rgba(0, 0, 0, .7);
-            color: #fff;
-            z-index: 999
-        }
-
-        .country-panel.hidden {
-            display: none
-        }
-
-        .cp-header {
+        .header-metric-row {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 14px
+            align-items: baseline;
+            gap: 6px;
+            margin-bottom: 8px;
         }
 
-        .cp-title {
+        .header-metric-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 24px;
+            font-weight: 700;
+            color: #ffffff;
+            line-height: 1;
+        }
+
+        .header-metric-label {
+            font-size: 9px;
+            color: #94a3b8;
+            text-transform: uppercase;
+        }
+
+        .header-breakdown {
+            display: flex;
+            gap: 8px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            padding-top: 8px;
+        }
+
+        .header-pill {
             display: flex;
             align-items: center;
-            gap: 10px;
-            font-size: 16px;
-            font-weight: 600
+            gap: 4px;
+            font-size: 9px;
+            font-weight: 600;
         }
 
-        #cp-close {
-            background: none;
-            border: none;
-            color: #aaa;
-            font-size: 18px;
-            cursor: pointer
+        .header-pill-dot {
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
         }
 
-        .cp-section {
-            padding: 10px 14px
+        .header-pill-high {
+            color: var(--red);
         }
 
-        .cp-label {
-            font-family: "JetBrains Mono", monospace;
-            font-size: 11px;
-            letter-spacing: .15em
+        .header-pill-high .header-pill-dot {
+            background: var(--red);
+            box-shadow: 0 0 4px var(--red);
         }
 
-        .cp-sub {
-            font-size: 11px;
-            color: #9ca3af;
-            margin-top: 2px
+        .header-pill-low {
+            color: #10b981;
         }
 
-        .cp-divider {
-            height: 1px;
-            background: linear-gradient(to right, transparent, #222, transparent);
-            margin: 6px 0
+        .header-pill-low .header-pill-dot {
+            background: #10b981;
+            box-shadow: 0 0 4px #10b981;
         }
 
-        .cp-row {
-            display: flex;
-            justify-content: space-between;
-            font-size: 13px;
-            margin-top: 10px
-        }
-
-        .spark {
-            margin-top: 4px
-        }
-
-        .country-panel {
-            opacity: 0;
-            transform: translateX(-50%) translateY(12px) scale(.96);
-            transition: opacity .35s ease, transform .45s cubic-bezier(.16, 1, .3, 1);
-        }
-
-        .country-panel.show {
-            opacity: 1;
-            transform: translateX(-50%) translateY(0) scale(1);
-        }
-
-        .cp-loading {
-            position: absolute;
-            inset: 0;
+        /* Tombol Toggle Flow Detail */
+        .toggle-flow-btn {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            z-index: 102;
+            width: 32px;
+            height: 32px;
+            background: rgba(8, 12, 20, 0.9);
+            border: 1px solid rgba(0, 180, 255, 0.4);
+            border-radius: 4px;
+            color: var(--neon);
             display: flex;
             align-items: center;
             justify-content: center;
-            background: linear-gradient(to bottom, #0b0b10, #050509);
-            border-radius: 14px;
-            z-index: 2
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 0 10px rgba(0, 180, 255, 0.2);
         }
 
-        .spinner {
-            width: 46px;
-            height: 46px;
-            border-radius: 50%;
-            border: 3px solid rgba(255, 255, 255, .15);
-            border-top-color: #ff1e6d;
-            animation: spin 1s linear infinite
+        .toggle-flow-btn.active {
+            right: 310px;
         }
 
-        @keyframes spin {
-            to {
-                transform: rotate(360deg)
-            }
-        }
-
-        .skeleton {
-            position: relative;
-            overflow: hidden;
-            background: rgba(255, 255, 255, .08);
-            border-radius: 6px
-        }
-
-        .skeleton::after {
-            content: "";
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(110deg, transparent 30%, rgba(255, 255, 255, .18) 50%, transparent 70%);
-            animation: shimmer 1.4s infinite
-        }
-
-        @keyframes shimmer {
-            from {
-                transform: translateX(-100%)
-            }
-
-            to {
-                transform: translateX(100%)
-            }
-        }
-
-        .fade-in {
-            animation: fadeIn .5s ease forwards
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(6px)
-            }
-
-            to {
-                opacity: 1;
-                transform: none
-            }
-        }
-
-        @media (max-width: 768px) {
-
-            body {
-                overflow-y: auto;
-            }
-
-            .topbar {
-                grid-template-columns: 1fr;
-                height: auto;
-                padding: 12px 14px;
-                gap: 8px;
-            }
-
-            .brand,
-            .cta {
-                display: none;
-            }
-
-            .centerTitle h1 {
-                font-size: 18px;
-                letter-spacing: .18em;
-            }
-
-            .centerTitle p {
-                font-size: 12px;
-            }
-
-            .shell {
-                grid-template-columns: 1fr;
-                padding: 12px;
-                gap: 12px;
-            }
-
-            .panel {
-                display: none;
-            }
-
-            .mapWrap {
-                height: 65vh;
-                border-radius: 18px;
-                overflow: hidden;
-            }
-
-            #container1 {
-                transform: scale(1.35) translateY(-6%);
-                transform-origin: center center;
-            }
-
-            .legend {
-                bottom: 10px;
-                gap: 12px;
-                font-size: 11px;
-            }
-
-            #attackdiv {
-                font-size: 11px;
-                padding: 10px;
-                height: 30vh;
-            }
-
-            .country-panel {
-                top: 110px;
-                width: calc(100vw - 28px);
-                left: 50%;
-                transform: translateX(-50%);
-            }
-        }
-
-        .map-zoom {
-            position: absolute;
-            right: 14px;
-            top: 14px;
+        /* Tampilan Flow Detail */
+        #flowdetail {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            width: 280px;
+            background: rgba(8, 12, 20, 0.9);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(0, 180, 255, 0.2);
+            border-radius: 6px;
+            z-index: 101;
+            font-size: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            max-height: calc(100vh - 150px);
             display: flex;
             flex-direction: column;
-            gap: 8px;
-            z-index: 20
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+            transform: translateX(320px);
+            opacity: 0;
+            pointer-events: none;
         }
 
-        .map-zoom button {
-            width: 38px;
-            height: 38px;
-            border-radius: 12px;
-            border: 1px solid rgba(255, 255, 255, .15);
-            background: rgba(10, 10, 20, .65);
-            color: #00b4ff;
-            font-size: 18px;
+        #flowdetail.visible {
+            transform: translateX(0);
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .flowdetail-title {
+            padding: 10px 12px;
+            background: rgba(0, 180, 255, 0.1);
+            border-bottom: 1px solid rgba(0, 180, 255, 0.2);
             font-weight: 700;
-            cursor: pointer;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 0 0 1px rgba(0, 180, 255, .12),
-                0 12px 30px rgba(0, 0, 0, .45)
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--neon);
+            display: flex;
+            justify-content: space-between;
+            flex-shrink: 0;
         }
 
-        .map-zoom button:active {
-            transform: scale(.96)
-        }
-
-        .mobile-attacks {
-            margin-top: 12px;
-        }
-
-        #attackdiv-mobile {
-            max-height: 38vh;
+        .flowdetail-content {
+            padding: 12px;
             overflow-y: auto;
-            font-family: "JetBrains Mono", monospace;
+            flex-grow: 1;
+        }
+
+        .flowdetail-metrics {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+
+        .flowdetail-metric-chip {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 6px;
+            border-radius: 4px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .flowdetail-metric-label {
+            font-size: 7px;
+            color: #64748b;
+            margin-bottom: 2px;
+            text-transform: uppercase;
+        }
+
+        .flowdetail-metric-value {
+            font-family: 'JetBrains Mono';
+            font-weight: 700;
             font-size: 12px;
-            line-height: 1.6;
-            padding: 10px;
-            border-radius: 14px;
-            border: 1px solid rgba(255, 255, 255, .06);
-            background: linear-gradient(135deg, rgba(0, 0, 0, .22), rgba(0, 0, 0, .06));
+        }
+
+        .flowdetail-section {
+            margin-bottom: 12px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            padding-top: 8px;
+        }
+
+        .flowdetail-section-title {
+            font-size: 8px;
+            color: #64748b;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+            font-weight: 700;
+        }
+
+        .flowdetail-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 3px;
+            gap: 8px;
+        }
+
+        .flowdetail-label {
+            color: #94a3b8;
+            flex-shrink: 0;
+        }
+
+        .flowdetail-value {
+            text-align: right;
+            color: #f1f5f9;
+            word-break: break-all;
+            font-size: 9px;
+        }
+
+        /* Log Serangan Baru di Kiri Bawah */
+        .attack-wrapper {
+            position: fixed;
+            bottom: 15px;
+            left: 15px;
+            width: 580px;
+            z-index: 100;
+            mask-image: linear-gradient(to top, black 85%, transparent 100%);
+        }
+
+        #attackdiv {
+            max-height: 250px;
+            overflow-y: hidden;
+            display: flex;
+            flex-direction: column-reverse;
+            gap: 6px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .log-entry {
+            background: rgba(8, 12, 20, 0.85);
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 8px 12px;
+            font-size: 9px;
+            border-left: 3px solid var(--neon);
+            animation: slideInLeft 0.3s ease-out forwards;
+        }
+
+        @keyframes slideInLeft {
+            from {
+                transform: translateX(-20px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .log-main {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 4px;
+            color: #cbd5e1;
+        }
+
+        .log-time {
+            color: #64748b;
+        }
+
+        .attack-source {
+            color: #ffffff;
+            font-weight: 700;
+        }
+
+        .log-ip {
+            color: #94a3b8;
+            opacity: 0.8;
+        }
+
+        .attack-target {
+            color: var(--cyan);
+            font-weight: 700;
+        }
+
+        .attack-type {
+            color: #f1f5f9;
+            font-weight: 700;
+            padding: 1px 4px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 2px;
+        }
+
+        .log-meta {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 8px;
+            border-top: 1px solid rgba(255, 255, 255, 0.03);
+            padding-top: 4px;
+        }
+
+        .log-severity {
+            font-weight: 800;
+            text-transform: uppercase;
+            padding: 1px 6px;
+            border-radius: 2px;
+        }
+
+        .log-severity--high {
+            color: #ffffff;
+            background: var(--red);
+        }
+
+        .log-severity--low {
+            color: #ffffff;
+            background: #10b981;
+        }
+
+        /* KONTROL NAVIGASI (Kanan Bawah) */
+        .map-controls {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            z-index: 200;
+        }
+
+        .ctrl-btn {
+            width: 44px;
+            height: 44px;
+            background: rgba(8, 12, 20, 0.9);
+            border: 1px solid rgba(0, 180, 255, 0.4);
+            border-radius: 8px;
+            color: var(--neon);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(8px);
+        }
+
+        .ctrl-btn:hover {
+            background: var(--neon);
+            color: #000;
+            box-shadow: 0 0 15px rgba(0, 180, 255, 0.6);
+            transform: translateY(-2px);
+        }
+
+        .ctrl-btn:active {
+            transform: scale(0.9);
+        }
+
+        .ctrl-btn svg {
+            width: 22px;
+            height: 22px;
+            stroke-width: 2.5px;
+        }
+
+        /* Tooltip simple */
+        .ctrl-btn::after {
+            content: attr(data-label);
+            position: absolute;
+            right: 60px;
+            background: rgba(0, 180, 255, 0.9);
+            color: #000;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+        }
+
+        .ctrl-btn:hover::after {
+            opacity: 1;
+        }
+
+        /* Animasi Arc Serangan */
+        .custom-arc {
+            fill: none;
+            stroke-dasharray: 1000;
+            stroke-dashoffset: 1000;
+            animation: arcPathAnim 2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+            pointer-events: none;
+        }
+
+        @keyframes arcPathAnim {
+            0% {
+                stroke-dashoffset: 1000;
+                opacity: 0;
+            }
+
+            20% {
+                opacity: 1;
+            }
+
+            80% {
+                opacity: 1;
+            }
+
+            100% {
+                stroke-dashoffset: 0;
+                opacity: 0;
+            }
+        }
+
+        .impact-circle {
+            fill: none;
+            stroke-width: 2;
+            animation: pulseImpact 1.2s ease-out forwards;
+        }
+
+        @keyframes pulseImpact {
+            0% {
+                r: 0;
+                opacity: 1;
+                stroke-width: 4;
+            }
+
+            100% {
+                r: 30;
+                opacity: 0;
+                stroke-width: 1;
+            }
+        }
+    </style>
+    <style>
+        @media (max-width: 640px) {
+            .map-controls {
+                display: none !important;
+            }
         }
     </style>
 
-
-    <script src="https://d3js.org/d3.v3.min.js"></script>
-    <script src="https://d3js.org/topojson.v1.min.js"></script>
-    <script src="https://d3js.org/d3.geo.projection.v0.min.js"></script>
-    <script src="https://datamaps.github.io/scripts/datamaps.world.min.js?v=1"></script>
 </head>
 
 <body>
-    <div id="app">
-        <div class="topbar">
-            <div class="brand">
-                <div class="brand-badge"></div>
-                <div>
-                    <div class="brand-name">VIROLOGI</div>
-                    <div class="brand-sub">SECURITY INTELLIGENCE</div>
-                </div>
-            </div>
 
-            <div class="centerTitle">
-                <h1>LIVE CYBER THREAT MAP</h1>
-                <p><span id="attackCounter">0</span> ATTACKS ON THIS DAY</p>
-            </div>
+    <div id="map-container"></div>
 
-            <div class="cta">
-                DON'T WAIT TO BE ATTACKED<br />
-                PREVENTION STARTS <span>NOW →</span>
-            </div>
+    <!-- Header Stats -->
+    <!-- Pastikan Remix Icon sudah di-load -->
+    <link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet">
+
+    <div id="header-panel" style="position: relative;">
+        <div class="header-title">PANIC CYBER THREAT MONITOR</div>
+        <div class="header-subtitle">Total serangan terdeteksi secara real-time</div>
+        <div class="header-metric-row">
+            <span id="total-attacks" class="header-metric-value">0</span>
+            <span class="header-metric-label">serangan</span>
+        </div>
+        <div class="header-breakdown">
+            <span class="header-pill header-pill-high"><span class="header-pill-dot"></span>High: <span
+                    id="total-high">0</span></span>
+            <span class="header-pill header-pill-low"><span class="header-pill-dot"></span>Low: <span
+                    id="total-low">0</span></span>
         </div>
 
-        <div class="shell">
-            <aside class="panel">
-                <div class="panelInner">
+        <!-- Tombol Back to Home (Remix Icon) -->
+        <a href="/"
+            style="
+       position: absolute;
+       top: 10px;
+       right: 10px;
+       display: flex;
+       align-items: center;
+       justify-content: center;
+       width: 40px;
+       height: 40px;
+       background: linear-gradient(145deg, #000000, #333333);
+       border-radius: 8px;
+       box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+       transition: all 0.3s;
+       text-decoration: none;
+   "
+            onmouseover="this.style.background='linear-gradient(145deg, #111111, #444444)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.6)';"
+            onmouseout="this.style.background='linear-gradient(145deg, #000000, #333333)'; this.style.boxShadow='0 4px 8px rgba(0,0,0,0.4)';">
+            <i class="ri-home-4-line" style="color:white; font-size:24px;"></i>
+        </a>
 
-                    <!-- HOME BUTTON -->
-                    <a href="/"
-                        style="
-                display:block;
-                margin-bottom:12px;
-                padding:8px 12px;
-                border:1px solid rgba(255,255,255,.3);
-                border-radius:6px;
-                text-align:center;
-                font-size:13px;
-                text-decoration:none;
-                color:#fff;
-           ">
-                        ← Home
-                    </a>
+        <style>
+            @media (max-width: 640px) {
+                a[href='/'] {
+                    width: 32px !important;
+                    height: 32px !important;
+                }
 
-                    <div class="panelTitle">
-                        RECENT DAILY ATTACKS <small>Last 14 days</small>
-                    </div>
+                a[href='/'] i {
+                    font-size: 18px !important;
+                }
+            }
+        </style>
 
-                    <div class="divider"></div>
+    </div>
 
-                    <div class="canvasWrap">
-                        <canvas id="miniChart" width="600" height="240"></canvas>
-                    </div>
 
-                    <div class="attackHeader">
-                        <div class="panelTitle" style="margin:0">ATTACKS</div>
-                        <div class="rate">
-                            <span class="pill">Current rate</span>
-                            <span id="rateValue" class="pill">1.2/s</span>
-                            <span class="stepper">
-                                <button id="rateMinus">−</button>
-                                <button id="ratePlus">+</button>
-                            </span>
-                        </div>
-                    </div>
+    <!-- Toggle Flow Detail -->
+    <button id="toggle-flow-btn" class="toggle-flow-btn" onclick="toggleFlowPanel()">
+        <svg id="toggle-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15 18l-6-6 6-6" />
+        </svg>
+    </button>
 
-                    <div class="map-zoom">
-                        <button id="zoomIn">＋</button>
-                        <button id="zoomOut">－</button>
-                        <button id="zoomReset">⟳</button>
-                    </div>
-
-                    <div id="attackdiv"></div>
-
+    <!-- Panel Flow Detail -->
+    <div id="flowdetail">
+        <div class="flowdetail-title"><span>Flow Detail</span><span style="font-size: 8px; opacity: 0.6;">LIVE
+                FEED</span></div>
+        <div id="flowdetail-content" class="flowdetail-content">
+            <div class="flowdetail-metrics">
+                <div class="flowdetail-metric-chip">
+                    <div class="flowdetail-metric-label">Total</div>
+                    <div id="fd-total" class="flowdetail-metric-value">0</div>
                 </div>
-            </aside>
-
-            <main class="mapWrap">
-                <div id="container1"></div>
-                <div class="legend">
-                    <div class="leg"><i class="m"></i> Malware</div>
-                    <div class="leg"><i class="p"></i> Phishing</div>
-                    <div class="leg"><i class="e"></i> Exploit</div>
+                <div class="flowdetail-metric-chip">
+                    <div class="flowdetail-metric-label">High</div>
+                    <div id="fd-high" class="flowdetail-metric-value text-pink-500">0</div>
                 </div>
-            </main>
-
-            <div class="panel mobile-attacks">
-                <div class="panelInner">
-
-                    <!-- HOME BUTTON -->
-                    <a href="/"
-                        style="
-                display:block;
-                margin-bottom:10px;
-                padding:8px 12px;
-                border:1px solid rgba(255,255,255,.3);
-                border-radius:6px;
-                text-align:center;
-                font-size:13px;
-                text-decoration:none;
-                color:#fff;
-           ">
-                        ← Home
-                    </a>
-
-                    <div class="panelTitle">
-                        <span>Recent Attacks</span>
-                        <small>Live</small>
-                    </div>
-
-                    <div class="divider"></div>
-
-                    <div id="attackdiv-mobile"></div>
-
+                <div class="flowdetail-metric-chip">
+                    <div class="flowdetail-metric-label">Low</div>
+                    <div id="fd-low" class="flowdetail-metric-value text-emerald-400">0</div>
                 </div>
             </div>
-
-
-
-            <aside class="panel">
-                <div class="panelInner">
-                    <div class="panelTitle">TOP TARGETED COUNTRIES <small>Last day</small></div>
-                    <div class="divider"></div>
-                    <div class="list" id="topCountries"></div>
-
-                    <div class="panelTitle" style="margin-top:10px">TOP TARGETED INDUSTRIES <small>Last day</small>
-                    </div>
-                    <div class="divider"></div>
-                    <div class="list" id="topIndustries"></div>
-
-                    <div class="panelTitle" style="margin-top:10px">TOP MALWARE TYPES <small>Last day</small></div>
-                    <div class="divider"></div>
-                    <div class="list" id="topMalware"></div>
-                </div>
-            </aside>
+            <div class="flowdetail-section">
+                <div class="flowdetail-section-title">Summary</div>
+                <div class="flowdetail-row"><span class="flowdetail-label">Type</span><span id="fd-type"
+                        class="flowdetail-value text-cyan-400 font-bold">-</span></div>
+                <div class="flowdetail-row"><span class="flowdetail-label">Severity</span><span id="fd-severity"
+                        class="flowdetail-value">-</span></div>
+                <div class="flowdetail-row"><span class="flowdetail-label">Timestamp</span><span id="fd-time"
+                        class="flowdetail-value">-</span></div>
+            </div>
+            <div class="flowdetail-section">
+                <div class="flowdetail-section-title">Nodes</div>
+                <div class="flowdetail-row"><span class="flowdetail-label">SRC</span><span id="fd-src"
+                        class="flowdetail-value">-</span></div>
+                <div class="flowdetail-row"><span class="flowdetail-label">DST</span><span id="fd-dst"
+                        class="flowdetail-value">-</span></div>
+            </div>
+            <div class="flowdetail-section">
+                <div class="flowdetail-section-title">Technical</div>
+                <div class="flowdetail-row"><span class="flowdetail-label">Protocol</span><span id="fd-proto"
+                        class="flowdetail-value">-</span></div>
+                <div class="flowdetail-row"><span class="flowdetail-label">Size</span><span id="fd-size"
+                        class="flowdetail-value">-</span></div>
+            </div>
         </div>
     </div>
 
-    <div id="countryPanel" class="country-panel hidden">
-        <div class="cp-loading" id="cpLoading">
-            <div class="spinner"></div>
-        </div>
+    <!-- Log Serangan (Kiri Bawah) -->
+    <div class="attack-wrapper">
+        <div id="attackdiv"></div>
+    </div>
 
-        <div class="cp-header fade-in">
-            <div class="cp-title">
-                <span id="cp-flag">🏳️</span>
-                <span id="cp-name"></span>
-            </div>
-            <button id="cp-close">✕</button>
-        </div>
-
-        <div class="cp-section fade-in">
-            <div class="cp-label">ATTACK TREND</div>
-            <div class="cp-sub">Last 30 days</div>
-            <canvas id="cpTrend" width="260" height="90"></canvas>
-        </div>
-
-        <div class="cp-divider"></div>
-
-        <div class="cp-section fade-in">
-            <div class="cp-label">MALWARE TYPE TRENDS</div>
-
-            <div class="cp-row"><span>Botnet</span><span id="m1">6.2%</span></div>
-            <canvas class="spark" width="260" height="22"></canvas>
-
-            <div class="cp-row"><span>Infostealer</span><span id="m2">3.0%</span></div>
-            <canvas class="spark" width="260" height="22"></canvas>
-
-            <div class="cp-row"><span>Ransomware</span><span id="m3">2.7%</span></div>
-            <canvas class="spark" width="260" height="22"></canvas>
-        </div>
+    <!-- KONTROL NAVIGASI -->
+    <div class="map-controls">
+        <button class="ctrl-btn" data-label="Zoom In" onclick="zoomManual(1.2)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"
+                stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+        </button>
+        <button class="ctrl-btn" data-label="Zoom Out" onclick="zoomManual(0.8)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"
+                stroke-linejoin="round">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+        </button>
+        <button class="ctrl-btn" data-label="Reset Map" onclick="resetMap()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path>
+                <path d="M21 3v5h-5"></path>
+                <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path>
+                <path d="M3 21v-5h5"></path>
+            </svg>
+        </button>
     </div>
 
     <script>
-        var attackCount = 9237384;
-        var baseRate = 1.2;
-        var rateMin = .4;
-        var rateMax = 6.0;
-
-        function formatNumber(n) {
-            var s = Math.floor(n).toString();
-            var out = "";
-            for (var i = 0; i < s.length; i++) {
-                var idx = s.length - 1 - i;
-                out = s[idx] + out;
-                if (i % 3 === 2 && idx !== 0) out = "," + out
-            }
-            return out
-        }
-
-        function setCounter() {
-            document.getElementById("attackCounter").textContent = formatNumber(attackCount)
-        }
-
-        setCounter();
-
-        function setRateLabel() {
-            document.getElementById("rateValue").textContent = baseRate.toFixed(1) + "/s"
-        }
-
-        setRateLabel();
-
-        document.getElementById("rateMinus").addEventListener("click", function() {
-            baseRate = Math.max(rateMin, baseRate - 0.4);
-            setRateLabel();
-            rebuildTimer();
-        });
-
-        document.getElementById("ratePlus").addEventListener("click", function() {
-            baseRate = Math.min(rateMax, baseRate + 0.4);
-            setRateLabel();
-            rebuildTimer();
-        });
-
-        var chartData = [];
-
-        function seedChart() {
-            chartData = [];
-            var v = 12.5;
-            for (var i = 0; i < 14; i++) {
-                v = Math.max(5, Math.min(20, v + (Math.random() * 4 - 2)));
-                chartData.push(v)
-            }
-        }
-        seedChart();
-
-        function drawMiniChart() {
-            var c = document.getElementById("miniChart");
-            var ctx = c.getContext("2d");
-            var w = c.width,
-                h = c.height;
-            ctx.clearRect(0, 0, w, h);
-
-            ctx.globalAlpha = 1;
-            ctx.fillStyle = "rgba(255,255,255,.03)";
-            ctx.fillRect(0, 0, w, h);
-
-            ctx.strokeStyle = "rgba(255,255,255,.08)";
-            ctx.lineWidth = 1;
-            for (var gx = 0; gx <= 6; gx++) {
-                var x = Math.floor(gx * w / 6);
-                ctx.beginPath();
-                ctx.moveTo(x, 0);
-                ctx.lineTo(x, h);
-                ctx.stroke();
-            }
-            for (var gy = 0; gy <= 4; gy++) {
-                var y = Math.floor(gy * h / 4);
-                ctx.beginPath();
-                ctx.moveTo(0, y);
-                ctx.lineTo(w, y);
-                ctx.stroke();
-            }
-
-            var max = 0;
-            for (var i = 0; i < chartData.length; i++) max = Math.max(max, chartData[i]);
-            max = Math.max(max, 22);
-
-            var pad = 14;
-            var innerW = w - pad * 2;
-            var innerH = h - pad * 2;
-
-            ctx.beginPath();
-            for (var i = 0; i < chartData.length; i++) {
-                var x = pad + (i * (innerW / (chartData.length - 1)));
-                var y = pad + innerH - (chartData[i] / max) * innerH;
-                if (i === 0) ctx.moveTo(x, y);
-                else ctx.lineTo(x, y);
-            }
-            ctx.lineWidth = 3;
-            ctx.strokeStyle = "rgba(255,30,109,.95)";
-            ctx.shadowColor = "rgba(255,30,109,.35)";
-            ctx.shadowBlur = 14;
-            ctx.stroke();
-            ctx.shadowBlur = 0;
-
-            ctx.lineTo(pad + innerW, pad + innerH);
-            ctx.lineTo(pad, pad + innerH);
-            ctx.closePath();
-            var grad = ctx.createLinearGradient(0, pad, 0, pad + innerH);
-            grad.addColorStop(0, "rgba(255,30,109,.35)");
-            grad.addColorStop(1, "rgba(255,30,109,0)");
-            ctx.fillStyle = grad;
-            ctx.fill();
-
-            ctx.fillStyle = "rgba(255,255,255,.75)";
-            ctx.font = "12px JetBrains Mono, monospace";
-            ctx.fillText("20,000,000", 10, 18);
-            ctx.fillStyle = "rgba(255,255,255,.55)";
-            ctx.fillText("10,000,000", 10, Math.floor(h / 2));
-            ctx.fillText("5,000,000", 10, h - 10);
-        }
-        drawMiniChart();
-
-        setInterval(function() {
-            chartData.shift();
-            var last = chartData[chartData.length - 1];
-            var next = Math.max(5, Math.min(20, last + (Math.random() * 4 - 2)));
-            chartData.push(next);
-            drawMiniChart();
-        }, 2400);
-
-        var map = new Datamap({
-            scope: "world",
-            element: document.getElementById("container1"),
-            projection: "winkel3",
-            fills: {
-                defaultFill: "rgba(255,255,255,.02)"
-            },
-            geographyConfig: {
-                hideAntarctica: true,
-                borderWidth: .6,
-                borderColor: "rgba(255,255,255,.12)",
-                popupTemplate: function(g) {
-                    return '<div class="hoverinfo">' + g.properties.name + "</div>"
-                },
-                highlightOnHover: true,
-                highlightFillColor: "rgba(0,212,255,.08)",
-                highlightBorderColor: "rgba(255,30,109,.75)",
-                highlightBorderWidth: 1
-            },
-            done: function(d) {
-                var defs = d.svg.append("defs");
-
-                var glow = defs.append("filter")
-                    .attr("id", "glow")
-                    .attr("x", "-50%")
-                    .attr("y", "-50%")
-                    .attr("width", "200%")
-                    .attr("height", "200%");
-
-                glow.append("feGaussianBlur")
-                    .attr("stdDeviation", "3")
-                    .attr("result", "blur");
-
-                var m = glow.append("feMerge");
-                m.append("feMergeNode").attr("in", "blur");
-                m.append("feMergeNode").attr("in", "SourceGraphic")
-            }
-        });
-
-        function rIP() {
-            return Math.floor(Math.random() * 256) + "." + Math.floor(Math.random() * 256) + "." + Math.floor(Math
-                .random() * 256) + "." + Math.floor(Math.random() * 256)
-        }
-
-        function impact(lat, lon, color) {
-            var c = map.projection([lon, lat]);
-            if (!c || isNaN(c[0]) || isNaN(c[1])) return;
-            var g = map.svg.append("g").attr("transform", "translate(" + c[0] + "," + c[1] + ")");
-            for (var i = 0; i < 3; i++) {
-                g.append("circle").attr("class", "impact-ripple").attr("stroke", color).style("animation-delay", i * .25 +
-                    "s")
-            }
-            g.append("circle").attr("class", "impact-core impact-glow").attr("fill", color);
-            setTimeout(function() {
-                g.remove()
-            }, 2200)
-        }
-
-        function arcGradient(id, from, to) {
-            var defs = map.svg.select("defs");
-            var grad = defs.append("linearGradient")
-                .attr("id", id)
-                .attr("gradientUnits", "userSpaceOnUse")
-                .attr("x1", from[0]).attr("y1", from[1])
-                .attr("x2", to[0]).attr("y2", to[1]);
-            grad.append("stop").attr("offset", "0%").attr("stop-color", "rgba(255,30,109,.0)");
-            grad.append("stop").attr("offset", "30%").attr("stop-color", "rgba(255,30,109,.85)");
-            grad.append("stop").attr("offset", "70%").attr("stop-color", "rgba(0,212,255,.85)");
-            grad.append("stop").attr("offset", "100%").attr("stop-color", "rgba(0,212,255,0)");
-            return "url(#" + id + ")"
-        }
-
-        function smoothArc(slat, slon, dlat, dlon, kind) {
-            var p1 = map.projection([slon, slat]);
-            var p2 = map.projection([dlon, dlat]);
-            if (!p1 || !p2) return;
-
-            var midX = (p1[0] + p2[0]) / 2;
-            var midY = (p1[1] + p2[1]) / 2 - 90;
-
-            var pathData = "M" + p1[0] + "," + p1[1] + " Q" + midX + "," + midY + " " + p2[0] + "," + p2[1];
-
-            var col = kind === "malware" ? "rgba(255,107,107,.95)" : (kind === "phishing" ? "rgba(168,85,247,.95)" :
-                "rgba(245,158,11,.95)");
-            var gid = "g" + Math.floor(Math.random() * 1e9);
-            var stroke = arcGradient(gid, p1, p2);
-
-            var path = map.svg.append("path")
-                .attr("d", pathData)
-                .attr("fill", "none")
-                .attr("stroke", stroke)
-                .attr("stroke-width", 2.2)
-                .attr("stroke-linecap", "round")
-                .attr("filter", "url(#glow)")
-                .attr("opacity", .95);
-
-            var length = path.node().getTotalLength();
-
-            path
-                .attr("stroke-dasharray", length + " " + length)
-                .attr("stroke-dashoffset", length)
-                .transition()
-                .duration(1100)
-                .ease("cubic-in-out")
-                .attr("stroke-dashoffset", 0)
-                .transition()
-                .duration(900)
-                .ease("linear")
-                .attr("opacity", 0)
-                .remove();
-
-            setTimeout(function() {
-                impact(dlat, dlon, col)
-            }, 820)
-        }
-
-
-        function addLog(srcName, dstName, type) {
-            var line =
-                '<span class="attack-source">' + srcName + '</span> ' +
-                '<span class="attack-ip">(' + rIP() + ')</span> ' +
-                '<span class="attack-target">attacks</span> ' +
-                '<span class="attack-source">' + dstName + '</span> ' +
-                '<span class="attack-ip">(' + rIP() + ')</span> ' +
-                '<span class="attack-type">(' + type + ')</span><br>';
-
-            var log = document.getElementById("attackdiv");
-            if (log) {
-                log.innerHTML += line;
-                log.scrollTop = log.scrollHeight;
-            }
-
-            var logMobile = document.getElementById("attackdiv-mobile");
-            if (logMobile) {
-                logMobile.innerHTML += line;
-                logMobile.scrollTop = logMobile.scrollHeight;
-            }
-        }
-
-
-        var points = [{
-                name: "USA",
-                flag: "🇺🇸",
-                lat: 37.09,
-                lon: -95.71,
-                ind: "Telecommunications"
-            },
-            {
-                name: "China",
-                flag: "🇨🇳",
-                lat: 35.86,
-                lon: 104.19,
-                ind: "Government"
-            },
-            {
-                name: "Russia",
-                flag: "🇷🇺",
-                lat: 61.52,
-                lon: 105.31,
-                ind: "Government"
-            },
-            {
-                name: "Germany",
-                flag: "🇩🇪",
-                lat: 51.16,
-                lon: 10.45,
-                ind: "Education"
-            },
-            {
-                name: "UK",
-                flag: "🇬🇧",
-                lat: 55.37,
-                lon: -3.43,
-                ind: "Telecommunications"
-            },
-            {
-                name: "Brazil",
-                flag: "🇧🇷",
-                lat: -14.23,
-                lon: -51.92,
-                ind: "Education"
-            },
-            {
-                name: "India",
-                flag: "🇮🇳",
-                lat: 20.59,
-                lon: 78.96,
-                ind: "Telecommunications"
-            },
-            {
-                name: "Japan",
-                flag: "🇯🇵",
-                lat: 36.2,
-                lon: 138.25,
-                ind: "Manufacturing"
-            },
-            {
-                name: "Indonesia",
-                flag: "🇮🇩",
-                lat: -2.54,
-                lon: 118.01,
-                ind: "Government"
-            },
-            {
-                name: "Australia",
-                flag: "🇦🇺",
-                lat: -25.27,
-                lon: 133.77,
-                ind: "Education"
-            },
-            {
-                name: "Canada",
-                flag: "🇨🇦",
-                lat: 56.13,
-                lon: -106.35,
-                ind: "Education"
-            },
-            {
-                name: "France",
-                flag: "🇫🇷",
-                lat: 46.23,
-                lon: 2.21,
-                ind: "Government"
-            },
-            {
-                name: "Turkey",
-                flag: "🇹🇷",
-                lat: 38.96,
-                lon: 35.24,
-                ind: "Telecommunications"
-            },
-            {
-                name: "Mexico",
-                flag: "🇲🇽",
-                lat: 23.63,
-                lon: -102.55,
-                ind: "Education"
-            },
-            {
-                name: "South Africa",
-                flag: "🇿🇦",
-                lat: -30.56,
-                lon: 22.94,
-                ind: "Manufacturing"
-            }
+        const ATTACK_COLORS = [
+            '#ef4444', // merah
+            '#22c55e', // hijau
+            '#eab308' // kuning
         ];
 
-        var types = [{
-                label: "Malware",
-                kind: "malware"
-            },
-            {
-                label: "Phishing",
-                kind: "phishing"
-            },
-            {
-                label: "Exploit",
-                kind: "exploit"
-            },
-            {
-                label: "Ransomware",
-                kind: "malware"
-            },
-            {
-                label: "Brute Force",
-                kind: "exploit"
-            },
-            {
-                label: "Botnet",
-                kind: "malware"
+        function getAttackColor(severity = '') {
+            if (severity && severity.includes('HIGH')) {
+                return '#ef4444'; // HIGH selalu merah
             }
-        ];
-
-        var countryScores = {};
-        var industryScores = {};
-        var malwareScores = {};
-
-        function bump(obj, key, by) {
-            obj[key] = (obj[key] || 0) + by;
+            return ATTACK_COLORS[Math.floor(Math.random() * ATTACK_COLORS.length)];
         }
 
-        function topEntries(obj, n) {
-            var arr = [];
-            for (var k in obj) arr.push([k, obj[k]]);
-            arr.sort(function(a, b) {
-                return b[1] - a[1]
-            });
-            return arr.slice(0, n);
-        }
 
-        function renderTop(listEl, rows, kind) {
-            var el = document.getElementById(listEl);
-            el.innerHTML = "";
-            for (var i = 0; i < rows.length; i++) {
-                var name = rows[i][0];
-                var score = rows[i][1];
-                var left = '<div class="left"><div class="dot" style="background:' + (kind === "country" ?
-                        "rgba(255,30,109,.75)" : (kind === "industry" ? "rgba(0,212,255,.75)" : "rgba(245,158,11,.75)")) +
-                    '; box-shadow:0 0 0 6px rgba(255,255,255,.06), 0 0 18px ' + (kind === "country" ?
-                        "rgba(255,30,109,.22)" : (kind === "industry" ? "rgba(0,212,255,.18)" : "rgba(245,158,11,.18)")) +
-                    '"></div>' + (kind === "country" ? ('<div class="flag">' + (name.split(" ")[0] || "") + '</div>') :
-                        "") + '<div class="name">' + (kind === "country" ? name.replace(/^[^\s]+\s/, "") : name) +
-                    '</div></div>';
-                var right = '<div class="meta">' + score.toFixed(1) + '</div>';
-                var row = document.createElement("div");
-                row.className = "item";
-                row.innerHTML = left + right;
-                el.appendChild(row)
-            }
-        }
+        let nodes = [];
 
-        function updateRightPanels() {
-            var tc = topEntries(countryScores, 5);
-            var ti = topEntries(industryScores, 3);
-            var tm = topEntries(malwareScores, 3);
+        let map, svg, mainG;
+        let currentScale = 1;
+        let currentTranslate = [0, 0];
 
-            var tc2 = [];
-            for (var i = 0; i < tc.length; i++) {
-                var label = tc[i][0];
-                tc2.push([label, tc[i][1]])
-            }
-            renderTop("topCountries", tc2, "country");
-            renderTop("topIndustries", ti, "industry");
-            renderTop("topMalware", tm, "malware");
-        }
-
-        function pickTwo() {
-            var a = points[Math.floor(Math.random() * points.length)];
-            var b = points[Math.floor(Math.random() * points.length)];
-            if (a === b) return pickTwo();
-            return [a, b]
-        }
-
-        function randType() {
-            return types[Math.floor(Math.random() * types.length)]
-        }
-
-        function fireAttack() {
-            var ab = pickTwo();
-            var a = ab[0],
-                b = ab[1];
-            var t = randType();
-
-            smoothArc(a.lat, a.lon, b.lat, b.lon, t.kind);
-            addLog(a.name, b.name, t.label);
-
-            attackCount += Math.max(1, Math.round(baseRate * 1.6));
-            setCounter();
-
-            bump(countryScores, b.flag + " " + b.name, Math.random() * 2.2 + 0.4);
-            bump(industryScores, b.ind, Math.random() * 1.6 + 0.3);
-            bump(malwareScores, t.label, Math.random() * 1.8 + 0.4);
-
-            updateRightPanels();
-        }
-
-        for (var i0 = 0; i0 < 18; i0++) {
-            bump(countryScores, points[Math.floor(Math.random() * points.length)].flag + " " + points[Math.floor(Math
-                .random() * points.length)].name, Math.random() * 12 + 2);
-            bump(industryScores, ["Education", "Government", "Telecommunications", "Manufacturing"][Math.floor(Math
-                .random() * 4)], Math.random() * 8 + 2);
-            bump(malwareScores, ["Malware", "Phishing", "Exploit", "Ransomware", "Botnet"][Math.floor(Math.random() * 5)],
-                Math.random() * 10 + 2);
-        }
-        updateRightPanels();
-
-        var timer = null;
-
-        function rebuildTimer() {
-            if (timer) clearInterval(timer);
-            var interval = Math.max(140, Math.floor(1000 / Math.max(.2, baseRate)));
-            timer = setInterval(fireAttack, interval);
-        }
-
-        rebuildTimer();
-
-        setInterval(function() {
-            attackCount += Math.max(1, Math.round(baseRate));
-            setCounter();
-        }, 1000);
-
-        d3.select(window).on("resize", function() {
-            location.reload()
-        });
-    </script>
-    <script>
-        var panel = document.getElementById("countryPanel");
-        var flagEl = document.getElementById("cp-flag");
-        var nameEl = document.getElementById("cp-name");
-        var loadingEl = document.getElementById("cpLoading");
-
-        document.getElementById("cp-close").onclick = function() {
-            panel.classList.remove("show");
-            setTimeout(function() {
-                panel.classList.add("hidden");
-            }, 300);
+        let stats = {
+            total: 0,
+            high: 0,
+            low: 0
         };
 
-        function randomSeries(n, min, max) {
-            var arr = [],
-                v = (min + max) / 2;
-            for (var i = 0; i < n; i++) {
-                v = Math.max(min, Math.min(max, v + (Math.random() - .5) * (max - min) * .3));
-                arr.push(v);
+        let isFlowVisible = false;
+
+        /* =======================
+         * LOAD MASTER NODES
+         * ======================= */
+        async function loadNodes() {
+            try {
+                const res = await fetch('/attack/nodes');
+                const json = await res.json();
+                nodes = json.nodes || [];
+            } catch (e) {
+                console.error('Failed load nodes', e);
             }
-            return arr;
         }
 
-        function drawArea(canvas, data) {
-            var ctx = canvas.getContext("2d");
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        /* =======================
+         * FLOW PANEL TOGGLE
+         * ======================= */
+        function toggleFlowPanel() {
+            const panel = document.getElementById('flowdetail');
+            const btn = document.getElementById('toggle-flow-btn');
+            const icon = document.getElementById('toggle-icon');
 
-            var w = canvas.width;
-            var h = canvas.height;
-            var max = Math.max.apply(null, data);
+            isFlowVisible = !isFlowVisible;
 
-            ctx.beginPath();
-            for (var i = 0; i < data.length; i++) {
-                var x = i * (w / (data.length - 1));
-                var y = h - (data[i] / max) * h;
-                i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
-            }
-            ctx.strokeStyle = "#ff1e6d";
-            ctx.lineWidth = 2;
-            ctx.stroke();
-
-            ctx.lineTo(w, h);
-            ctx.lineTo(0, h);
-            ctx.closePath();
-            var grad = ctx.createLinearGradient(0, 0, 0, h);
-            grad.addColorStop(0, "rgba(255,30,109,.4)");
-            grad.addColorStop(1, "rgba(255,30,109,0)");
-            ctx.fillStyle = grad;
-            ctx.fill();
-        }
-
-        function drawSpark(canvas) {
-            var data = randomSeries(24, 1, 10);
-            var ctx = canvas.getContext("2d");
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            ctx.beginPath();
-            for (var i = 0; i < data.length; i++) {
-                var x = i * (canvas.width / (data.length - 1));
-                var y = canvas.height - (data[i] / 10) * canvas.height;
-                i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
-            }
-            ctx.strokeStyle = "#ff1e6d";
-            ctx.lineWidth = 1.5;
-            ctx.stroke();
-        }
-
-        map.svg.selectAll(".datamaps-subunit")
-            .on("click", function(geo) {
-                panel.classList.remove("hidden");
-                panel.classList.remove("show");
-                loadingEl.style.display = "flex";
-
-                setTimeout(function() {
-                    flagEl.textContent = "🏳️";
-                    nameEl.textContent = geo.properties.name;
-
-                    drawArea(document.getElementById("cpTrend"), randomSeries(30, 20, 100));
-                    document.querySelectorAll(".spark").forEach(drawSpark);
-
-                    loadingEl.style.display = "none";
-                    panel.classList.add("show");
-                }, 600 + Math.random() * 400);
-            });
-    </script>
-
-    <script>
-        function adjustMapZoom() {
-            var mapEl = document.getElementById("container1");
-            if (!mapEl) return;
-
-            if (window.innerWidth <= 768) {
-                var isPortrait = window.innerHeight > window.innerWidth;
-                mapEl.style.transform = isPortrait ?
-                    "scale(1.4) translateY(-8%)" :
-                    "scale(1.25) translateY(-4%)";
+            if (isFlowVisible) {
+                panel.classList.add('visible');
+                btn.classList.add('active');
+                icon.innerHTML = '<path d="M9 18l6-6-6-6"/>';
             } else {
-                mapEl.style.transform = "none";
+                panel.classList.remove('visible');
+                btn.classList.remove('active');
+                icon.innerHTML = '<path d="M15 18l-6-6 6-6"/>';
             }
         }
 
-        window.addEventListener("resize", adjustMapZoom);
-        adjustMapZoom();
-    </script>
-    <script>
-        var svg = map.svg;
-        var g = svg.select("g");
+        /* =======================
+         * MAP INIT
+         * ======================= */
+        function initMap() {
+            const container = document.getElementById('map-container');
+            container.innerHTML = '';
 
-        var zoom = d3.behavior.zoom()
-            .scaleExtent([1, 4])
-            .on("zoom", function() {
-                g.attr("transform",
-                    "translate(" + d3.event.translate + ") scale(" + d3.event.scale + ")"
-                );
+            map = new Datamap({
+                element: container,
+                projection: 'mercator',
+                fills: {
+                    defaultFill: 'rgba(15, 25, 45, 0.7)'
+                },
+                geographyConfig: {
+                    borderWidth: 0.5,
+                    borderColor: 'rgba(0,180,255,0.15)',
+                    highlightFillColor: 'rgba(0,180,255,0.05)',
+                    highlightBorderColor: 'rgba(0,180,255,0.3)',
+                    popupOnHover: false
+                }
             });
 
-        svg.call(zoom);
+            svg = d3.select('#map-container svg');
+            mainG = svg.select('g');
 
-        document.getElementById("zoomIn").onclick = function() {
-            zoom.scale(zoom.scale() * 1.25);
-            zoom.event(svg.transition().duration(300));
+            if (mainG.select('.custom-layer').empty()) {
+                mainG.append('g').attr('class', 'custom-layer');
+            }
+
+            svg.call(
+                d3.behavior.drag().on('drag', function() {
+                    currentTranslate[0] += d3.event.dx;
+                    currentTranslate[1] += d3.event.dy;
+                    applyTransform();
+                })
+            );
+
+            svg.on('wheel.zoom', function() {
+                d3.event.preventDefault();
+                zoomManual(d3.event.deltaY > 0 ? 0.9 : 1.1);
+            });
+        }
+
+        function zoomManual(factor) {
+            currentScale *= factor;
+            currentScale = Math.max(0.6, Math.min(currentScale, 12));
+            applyTransform(true);
+        }
+
+        function applyTransform(animate = false) {
+            const target = animate ?
+                mainG.transition().duration(400).ease('cubic-out') :
+                mainG;
+
+            target.attr(
+                'transform',
+                `translate(${currentTranslate[0]}, ${currentTranslate[1]}) scale(${currentScale})`
+            );
+        }
+
+        /* =======================
+         * DRAW ARC
+         * ======================= */
+        function drawManualArc(src, dst, color) {
+            const layer = mainG.select('.custom-layer');
+
+            const start = map.projection([src.lng, src.lat]);
+            const end = map.projection([dst.lng, dst.lat]);
+            if (!start || !end) return;
+
+            const dx = end[0] - start[0];
+            const dy = end[1] - start[1];
+            const cpX = (start[0] + end[0]) / 2 - dy * 0.15;
+            const cpY = (start[1] + end[1]) / 2 + dx * 0.15;
+
+            layer.append('path')
+                .attr('d', `M${start[0]},${start[1]} Q${cpX},${cpY} ${end[0]},${end[1]}`)
+                .attr('class', 'custom-arc')
+                .style('stroke', color)
+                .style('stroke-width', 2 / currentScale);
+
+            setTimeout(() => {
+                const c = layer.append('circle')
+                    .attr('cx', end[0])
+                    .attr('cy', end[1])
+                    .attr('r', 0)
+                    .attr('class', 'impact-circle')
+                    .attr('stroke', color);
+
+                setTimeout(() => c.remove(), 1500);
+            }, 1800);
+        }
+
+        /* =======================
+         * FIRE ATTACK (DB)
+         * ======================= */
+        async function createAttackBurst() {
+            if (!map || nodes.length === 0) return;
+
+            try {
+                const res = await fetch('/attack/fire');
+                const json = await res.json();
+                if (!json.success) return;
+
+                let delay = 0;
+
+                json.attacks.forEach(a => {
+                    setTimeout(() => {
+                        const severity = a.severity || 'LOW';
+                        const color = getAttackColor(severity);
+
+                        stats.total++;
+                        if (severity.includes('HIGH')) stats.high++;
+                        else stats.low++;
+
+                        updateUI(a, a.src);
+                        drawManualArc(a.src, a.dst, color);
+                    }, delay);
+
+                    delay += Math.floor(Math.random() * 300) + 100;
+                });
+
+
+            } catch (e) {
+                console.error('Attack fetch failed', e);
+            }
+        }
+
+        /* =======================
+         * UI UPDATE
+         * ======================= */
+        function updateUI(info, src, color) {
+            document.getElementById('total-attacks').innerText = stats.total;
+            document.getElementById('total-high').innerText = stats.high;
+            document.getElementById('total-low').innerText = stats.low;
+
+            document.getElementById('fd-total').innerText = stats.total;
+            document.getElementById('fd-high').innerText = stats.high;
+            document.getElementById('fd-low').innerText = stats.low;
+
+            updateLog(src, info, color); // <-- pass color
+            updateFlow(src, info);
+        }
+
+        function updateLog(src, info, color) {
+            const div = document.getElementById('attackdiv');
+
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.innerHTML = `
+        <div class="log-main">
+            <span class="log-time">[${info.time}]</span>
+            <span class="attack-source" style="color:${color}">${src.name}</span>
+            <span class="log-ip">(${info.ip_src})</span>
+            <span class="attack-target">→</span>
+            <span class="attack-target" style="color:${color}">${info.dst.name}</span>
+            <span class="log-ip">(${info.ip_dst})</span>
+            <span class="log-type">[${info.type}]</span>
+        </div>
+        <div class="log-meta">
+            <span class="log-severity" style="color:${color}">${info.severity}</span>
+            <span class="log-proto">${info.proto}</span>
+            <span class="log-size">${info.size}</span>
+            <span class="log-action">${info.action}</span>
+        </div>
+    `;
+
+            div.appendChild(entry);
+            if (div.children.length > 8) div.removeChild(div.firstChild);
+        }
+
+
+        function updateFlow(src, info) {
+            document.getElementById('fd-type').innerText = info.type;
+            document.getElementById('fd-severity').innerText = info.severity;
+            document.getElementById('fd-time').innerText = info.time;
+            document.getElementById('fd-src').innerText = src.name;
+            document.getElementById('fd-dst').innerText = info.dst.name;
+            document.getElementById('fd-proto').innerText = info.proto;
+            document.getElementById('fd-size').innerText = info.size;
+        }
+
+        /* =======================
+         * INIT
+         * ======================= */
+        window.onload = async function() {
+            await loadNodes();
+            initMap();
+
+            setInterval(createAttackBurst, 1500);
+
+            setTimeout(() => {
+                if (!isFlowVisible) toggleFlowPanel();
+            }, 1000);
         };
 
-        document.getElementById("zoomOut").onclick = function() {
-            zoom.scale(zoom.scale() / 1.25);
-            zoom.event(svg.transition().duration(300));
-        };
-
-        document.getElementById("zoomReset").onclick = function() {
-            zoom.scale(1);
-            zoom.translate([0, 0]);
-            zoom.event(svg.transition().duration(400));
-        };
+        window.onresize = () => initMap();
     </script>
-
 
 
 </body>

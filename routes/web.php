@@ -2,8 +2,10 @@
 
 use App\Http\Controllers\AboutUsController;
 use App\Http\Controllers\AgentAiController;
+use App\Http\Controllers\AttackSimulationController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BlogController;
+use App\Http\Controllers\CyberAttackImportController;
 use App\Http\Controllers\CyberSecurityServiceController;
 use App\Http\Controllers\EbookController;
 use App\Http\Controllers\HomeController;
@@ -90,3 +92,7 @@ Route::middleware('auth')->prefix('ai-agent')->group(function () {
     Route::post('/sessions/{token}/pin', [AgentAiController::class, 'togglePin']);
     Route::delete('/sessions/{token}', [AgentAiController::class, 'deleteSession']);
 });
+
+Route::get('/attack/nodes', [AttackSimulationController::class, 'nodes']);
+Route::get('/attack/fire', [AttackSimulationController::class, 'fire']);
+Route::get('/import-cyber-attacks', [CyberAttackImportController::class, 'import']);
