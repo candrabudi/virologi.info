@@ -81,13 +81,9 @@
                                 </a>
 
                                 {{-- DOWNLOAD --}}
-                                <button type="button" class="rts-btn btn-primary ebook-btn"
-                                    onclick="downloadEbook(
-                                            '{{ $ebook->file_path }}',
-                                            '{{ Str::slug($ebook->title) }}.{{ $ebook->file_type }}'
-                                        )">
-                                    <i class="fa-regular fa-download"></i>
-                                    <span>Download</span>
+                                <button id="download-btn"
+                                    class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">
+                                    Download Ebook
                                 </button>
                             </div>
                         @endif
@@ -128,30 +124,18 @@
             font-size: 15px;
         }
     </style>
-
-    {{-- DOWNLOAD SCRIPT --}}
     <script>
-        function downloadEbook(url, filename) {
-            fetch(url)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Gagal download file');
-                    }
-                    return response.blob();
-                })
-                .then(blob => {
-                    const link = document.createElement('a');
-                    link.href = URL.createObjectURL(blob);
-                    link.download = filename;
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                    URL.revokeObjectURL(link.href);
-                })
-                .catch(error => {
-                    alert(error.message);
-                });
-        }
+        const url = {{ $ebook->file_path }};
+
+        document.getElementById('download-btn').onclick = function() {
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'Halaman_Virologi_Lengkap.pdf';
+            link.style.display = 'none';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        };
     </script>
 
 @endsection
