@@ -125,11 +125,12 @@
         }
     </style>
     <script>
-        const url = {{ $ebook->file_path }};
-
         document.getElementById('download-btn').onclick = function() {
+            const pdfUrl = encodeURIComponent('{{ $ebook->file_path }}');
+            const proxyUrl = `/pdf-proxy?url=${pdfUrl}`;
+
             const link = document.createElement('a');
-            link.href = url;
+            link.href = proxyUrl;
             link.download = 'Halaman_Virologi_Lengkap.pdf';
             link.style.display = 'none';
             document.body.appendChild(link);
