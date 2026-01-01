@@ -526,7 +526,7 @@
     <link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet">
 
     <div id="header-panel" style="position: relative;">
-        <div class="header-title">PANIC CYBER THREAT MONITOR</div>
+        <div class="header-title">VIROLOGI CYBER THREAT MONITOR</div>
         <div class="header-subtitle">Total serangan terdeteksi secara real-time</div>
         <div class="header-metric-row">
             <span id="total-attacks" class="header-metric-value">0</span>
