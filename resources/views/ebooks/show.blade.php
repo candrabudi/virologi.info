@@ -83,7 +83,7 @@
                                 {{-- DOWNLOAD --}}
                                 <button type="button" class="rts-btn btn-primary ebook-btn"
                                     onclick="downloadEbook(
-                                            '{{ asset('storage/' . $ebook->file_path) }}',
+                                            '{{ $ebook->file_path }}',
                                             '{{ Str::slug($ebook->title) }}.{{ $ebook->file_type }}'
                                         )">
                                     <i class="fa-regular fa-download"></i>
