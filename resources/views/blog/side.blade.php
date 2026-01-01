@@ -77,7 +77,7 @@
             data.forEach(cat => {
                 el.insertAdjacentHTML('beforeend', `
                 <li>
-                    <a href="/categories/${cat.slug}">
+                    <a href="/blog?category=${cat.slug}">
                         ${cat.name}
                         <i class="far fa-long-arrow-right"></i>
                     </a>
@@ -142,7 +142,7 @@
 
             data.forEach(tag => {
                 el.insertAdjacentHTML('beforeend', `
-                <a href="/tag/${tag.slug}">${tag.name}</a>
+                <a href="/blog?tag=${tag.slug}">${tag.name}</a>
             `)
             })
         } catch (err) {

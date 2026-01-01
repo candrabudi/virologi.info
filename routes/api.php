@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Article;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -29,7 +30,7 @@ Route::get('/article-tags', fn () => response()->json([
 );
 
 Route::get('/articles/recent', fn () => response()->json([
-    'data' => App\Models\Article::where('is_published', true)
+    'data' => Article::where('is_published', true)
         ->orderByDesc('published_at')
         ->limit(5)
         ->get(['title', 'slug', 'thumbnail', 'published_at'])
@@ -41,15 +42,19 @@ Route::get('/articles/recent', fn () => response()->json([
         ]),
 ])
 );
-
 Route::get('/articles', function (Request $request) {
     $q = $request->q;
+    $category = $request->category; // slug category
+    $tag = $request->tag;           // slug tag
 
-    $articles = App\Models\Article::with('categories')
+    $articles = Article::with(['categories', 'tags'])
         ->where('is_published', true)
-        ->when($q, fn ($query) => $query->where('title', 'like', "%$q%")
-                  ->orWhere('excerpt', 'like', "%$q%")
-        )
+        ->when($q, fn ($query) => $query->where(function ($q2) use ($q) {
+            $q2->where('title', 'like', "%$q%")
+               ->orWhere('excerpt', 'like', "%$q%");
+        }))
+        ->when($category, fn ($query, $category) => $query->whereHas('categories', fn ($q) => $q->where('slug', $category)))
+        ->when($tag, fn ($query, $tag) => $query->whereHas('tags', fn ($q) => $q->where('slug', $tag)))
         ->orderByDesc('published_at')
         ->paginate(5);
 
@@ -59,8 +64,9 @@ Route::get('/articles', function (Request $request) {
             'slug' => $a->slug,
             'excerpt' => $a->excerpt,
             'thumbnail' => $a->thumbnail,
-            'published_at' => $a->published_at->format('d M Y'),
+            'published_at' => $a->published_at?->format('d M Y'),
             'categories' => $a->categories->pluck('name')->toArray(),
+            'tags' => $a->tags->pluck('name')->toArray(),
         ]),
         'meta' => [
             'current_page' => $articles->currentPage(),
