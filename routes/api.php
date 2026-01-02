@@ -49,14 +49,28 @@ Route::get('/articles', function (Request $request) {
 
     $articles = Article::with(['categories', 'tags'])
         ->where('is_published', true)
-        ->when($q, fn ($query) => $query->where(function ($q2) use ($q) {
-            $q2->where('title', 'like', "%$q%")
-               ->orWhere('excerpt', 'like', "%$q%");
-        }))
-        ->when($category, fn ($query, $category) => $query->whereHas('categories', fn ($q) => $q->where('slug', $category)))
-        ->when($tag, fn ($query, $tag) => $query->whereHas('tags', fn ($q) => $q->where('slug', $tag)))
-        ->orderByDesc('published_at')
-        ->paginate(5);
+
+        ->when($q, function ($query) use ($q) {
+            $query->where(function ($q2) use ($q) {
+                $q2->where('title', 'like', "%{$q}%")
+                   ->orWhere('excerpt', 'like', "%{$q}%");
+            });
+        })
+
+        ->when($category, function ($query) use ($category) {
+            $query->whereHas('categories', function ($q) use ($category) {
+                $q->where('slug', $category);
+            });
+        })
+
+        ->when($tag, function ($query) use ($tag) {
+            $query->whereHas('tags', function ($q) use ($tag) {
+                $q->where('slug', $tag);
+            });
+        })
+        ->orderByDesc('created_at')
+
+        ->paginate(6);
 
     return response()->json([
         'data' => $articles->map(fn ($a) => [
@@ -64,13 +78,14 @@ Route::get('/articles', function (Request $request) {
             'slug' => $a->slug,
             'excerpt' => $a->excerpt,
             'thumbnail' => $a->thumbnail,
-            'published_at' => $a->published_at?->format('d M Y'),
+            'published_at' => optional($a->published_at)->format('d M Y'),
             'categories' => $a->categories->pluck('name')->toArray(),
             'tags' => $a->tags->pluck('name')->toArray(),
         ]),
         'meta' => [
             'current_page' => $articles->currentPage(),
             'last_page' => $articles->lastPage(),
+            'total' => $articles->total(),
         ],
     ]);
 });
