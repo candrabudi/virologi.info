@@ -25,8 +25,8 @@ class HomeController extends Controller
     {
         $articles = Article::with(['categories:id,name,slug', 'tags:id,name,slug'])
             ->where('is_published', true)
-            ->whereNotNull('published_at')
-            ->inRandomOrder()
+            ->orderBy('created_at', 'DESC')
+            // ->inRandomOrder()
             ->limit(12)
             ->get()
             ->map(function ($article) {
