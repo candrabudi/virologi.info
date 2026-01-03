@@ -4,10 +4,10 @@
         <div class="col-lg-3">
             <div class="footer-logo-area-left-8">
                 <a href="/" class="logo">
-                    <img src="{{ asset($footerSetting->logo_path ?? 'logo-2.png') }}" alt="Footer Logo">
+                    <img src="{{ asset($setting->logo_rectangle ?? 'logo-2.png') }}" alt="Footer Logo">
                 </a>
                 <p class="disc">
-                    {{ $footerSetting->description ?? '' }}
+                    {{ $setting->description ?? '' }}
                 </p>
             </div>
         </div>
