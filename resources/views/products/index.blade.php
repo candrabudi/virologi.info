@@ -81,52 +81,65 @@
 
             if (!Array.isArray(products) || products.length === 0) {
                 el.innerHTML = `
-                <div class="col-12 text-center text-muted py-5">
-                    Belum ada produk tersedia
-                </div>
-            `
+            <div class="col-12 text-center text-muted py-5">
+                Belum ada produk tersedia
+            </div>
+        `
                 return
             }
 
             products.forEach((product, index) => {
                 el.insertAdjacentHTML('beforeend', `
-                <div class="col-lg-6 col-md-6 col-sm-12"
-                    data-animation="fadeInUp"
-                    data-delay="0.${index + 1}"
-                    style="transform: translate(0px, 0px); opacity: 1;">
+            <div class="col-lg-4 col-md-6 col-sm-12"
+                data-animation="fadeInUp"
+                data-delay="0.${index + 1}">
 
-                    <div class="single-blog-area-one column-reverse">
+                <div class="card h-100 border-0 shadow-sm product-card">
 
-                        <p>
-                            ${product.product_type ?? 'Product'} /
-                            <span>${product.ai_domain?.replaceAll('_',' ') ?? 'security'}</span>
-                        </p>
+                    <a href="/products/${product.slug}" class="position-relative">
+                        <img
+                            src="${product.thumbnail ?? '/assets/images/placeholder/product.png'}"
+                            class="card-img-top"
+                            alt="${escapeHtml(product.name)}"
+                            loading="lazy"
+                            style="height:220px; object-fit:cover;"
+                        >
+                        <span class="badge bg-dark position-absolute top-0 start-0 m-3">
+                            ${product.product_type ?? 'Product'}
+                        </span>
+                    </a>
 
-                        <a href="/products/${product.slug}">
-                            <h4 class="title">${escapeHtml(product.name)}</h4>
-                        </a>
+                    <div class="card-body d-flex flex-column">
+
+                        <small class="text-muted mb-2">
+                            ${product.ai_domain?.replaceAll('_', ' ') ?? 'security'}
+                        </small>
+
+                        <h5 class="card-title">
+                            <a href="/products/${product.slug}" class="text-dark text-decoration-none">
+                                ${escapeHtml(product.name)}
+                            </a>
+                        </h5>
 
                         ${product.summary ? `
-                                <p class="disc mt-2">
+                                <p class="card-text text-muted mt-2">
                                     ${escapeHtml(product.summary)}
                                 </p>
                             ` : ''}
 
-                        <div class="bottom-details">
-                            <a href="/products/${product.slug}" class="thumbnail">
-                                <img
-                                    src="${product.thumbnail ?? '/assets/images/placeholder/product.png'}"
-                                    alt="${escapeHtml(product.name)}"
-                                    loading="lazy"
-                                    style="width:100%; height:220px; object-fit:cover;"
-                                >
+                        <div class="mt-auto">
+                            <a href="/products/${product.slug}" class="btn btn-outline-dark btn-sm w-100">
+                                Lihat Detail
                             </a>
                         </div>
+
                     </div>
                 </div>
-            `)
+            </div>
+        `)
             })
         }
+
 
         function renderPagination(meta) {
             const el = document.getElementById('pagination')

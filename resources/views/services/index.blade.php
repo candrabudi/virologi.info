@@ -86,48 +86,59 @@
             }
 
             services.forEach((service, index) => {
-                const thumbnail = service.thumbnail ?
-                    service.thumbnail :
-                    '/assets/images/placeholder/service.png'
+                const thumbnail = service.thumbnail ?? '/assets/images/placeholder/service.png'
 
                 el.insertAdjacentHTML('beforeend', `
-            <div class="col-lg-6 col-md-6 col-sm-12"
+            <div class="col-lg-4 col-md-6 col-sm-12"
                 data-animation="fadeInUp"
-                data-delay="0.${index + 1}"
-                style="transform: translate(0px, 0px); opacity: 1;">
+                data-delay="0.${index + 1}">
 
-                <div class="single-blog-area-one column-reverse">
+                <div class="card h-100 border-0 shadow-sm service-card">
 
-                    <p>
-                        ${service.category.replaceAll('_',' ')} /
-                        <span>cyber security</span>
-                    </p>
-
-                    <a href="/services/${service.slug}">
-                        <h4 class="title">${escapeHtml(service.name)}</h4>
+                    <a href="/services/${service.slug}" class="position-relative">
+                        <img
+                            src="${thumbnail}"
+                            class="card-img-top"
+                            alt="${escapeHtml(service.name)}"
+                            loading="lazy"
+                            style="height:220px; object-fit:cover;"
+                        >
+                        <span class="badge bg-primary position-absolute top-0 start-0 m-3">
+                            ${service.category.replaceAll('_', ' ')}
+                        </span>
                     </a>
 
-                    ${service.summary ? `
-                            <p class="disc mt-2">
-                                ${escapeHtml(service.summary)}
-                            </p>
-                        ` : ''}
+                    <div class="card-body d-flex flex-column">
 
-                    <div class="bottom-details">
-                        <a href="/services/${service.slug}" class="thumbnail">
-                            <img
-                                src="${thumbnail}"
-                                alt="${escapeHtml(service.name)}"
-                                loading="lazy"
-                                style="width:100%; height:220px; object-fit:cover;"
-                            >
-                        </a>
+                        <small class="text-muted mb-2">
+                            cyber security
+                        </small>
+
+                        <h5 class="card-title">
+                            <a href="/services/${service.slug}" class="text-dark text-decoration-none">
+                                ${escapeHtml(service.name)}
+                            </a>
+                        </h5>
+
+                        ${service.summary ? `
+                                <p class="card-text text-muted mt-2">
+                                    ${escapeHtml(service.summary)}
+                                </p>
+                            ` : ''}
+
+                        <div class="mt-auto">
+                            <a href="/services/${service.slug}" class="btn btn-outline-primary btn-sm w-100">
+                                Lihat Layanan
+                            </a>
+                        </div>
+
                     </div>
                 </div>
             </div>
         `)
             })
         }
+
 
         function renderPagination(meta) {
             const el = document.getElementById('pagination')

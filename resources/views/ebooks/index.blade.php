@@ -90,49 +90,62 @@
 
             if (!Array.isArray(ebooks) || ebooks.length === 0) {
                 el.innerHTML = `
-                <div class="col-12 text-center text-muted py-5">
-                    Belum ada e-book tersedia
-                </div>
-            `
+            <div class="col-12 text-center text-muted py-5">
+                Belum ada e-book tersedia
+            </div>
+        `
                 return
             }
 
             ebooks.forEach((ebook, index) => {
                 el.insertAdjacentHTML('beforeend', `
-                <div class="col-lg-6 col-md-6 col-sm-12"
-                     data-animation="fadeInUp"
-                     data-delay="0.${index + 1}">
+            <div class="col-lg-4 col-md-6 col-sm-12"
+                data-animation="fadeInUp"
+                data-delay="0.${index + 1}">
 
-                    <div class="single-blog-area-one column-reverse">
+                <div class="card h-100 border-0 shadow-sm ebook-card">
 
-                        <p>
-                            ${ebook.topic.replaceAll('_',' ')} /
-                            <span>${ebook.level}</span>
-                        </p>
+                    <a href="/ebooks/${ebook.slug}" class="position-relative d-flex justify-content-center bg-light">
+                        <img
+                            src="${ebook.cover_image ?? '/assets/images/placeholder/ebook.png'}"
+                            class="card-img-top p-3"
+                            alt="${escapeHtml(ebook.title)}"
+                            loading="lazy"
+                            style="height:220px; object-fit:contain;"
+                        >
+                        <span class="badge bg-secondary position-absolute top-0 start-0 m-3">
+                            ${ebook.topic.replaceAll('_', ' ')}
+                        </span>
+                    </a>
 
-                        <a href="/ebooks/${ebook.slug}">
-                            <h4 class="title">${escapeHtml(ebook.title)}</h4>
-                        </a>
+                    <div class="card-body d-flex flex-column">
+
+                        <small class="text-muted mb-2">
+                            Level: ${ebook.level}
+                        </small>
+
+                        <h5 class="card-title">
+                            <a href="/ebooks/${ebook.slug}" class="text-dark text-decoration-none">
+                                ${escapeHtml(ebook.title)}
+                            </a>
+                        </h5>
 
                         ${ebook.subtitle ? `
-                                    <p class="disc mt-2">
-                                        ${escapeHtml(ebook.subtitle)}
-                                    </p>
-                                ` : ''}
+                                <p class="card-text text-muted mt-2">
+                                    ${escapeHtml(ebook.subtitle)}
+                                </p>
+                            ` : ''}
 
-                        <div class="bottom-details">
-                            <a href="/ebooks/${ebook.slug}" class="thumbnail">
-                                <img
-                                    src="${ebook.cover_image ?? '/assets/images/placeholder/ebook.png'}"
-                                    alt="${escapeHtml(ebook.title)}"
-                                    loading="lazy"
-                                    style="width:100%; height:220px; object-fit:contain;"
-                                >
+                        <div class="mt-auto">
+                            <a href="/ebooks/${ebook.slug}" class="btn btn-outline-secondary btn-sm w-100">
+                                Baca E-Book
                             </a>
                         </div>
+
                     </div>
                 </div>
-            `)
+            </div>
+        `)
             })
         }
 
