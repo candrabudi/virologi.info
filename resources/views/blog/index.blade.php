@@ -76,45 +76,47 @@
 
             if (!Array.isArray(articles) || articles.length === 0) {
                 el.innerHTML = `
-            <div class="col-12 text-center text-muted py-5">
-                Tidak ada artikel ditemukan
-            </div>
+        <div class="col-12 text-center text-muted py-5">
+            Tidak ada artikel ditemukan
+        </div>
         `
                 return
             }
 
             articles.forEach((article, index) => {
                 el.insertAdjacentHTML('beforeend', `
-            <div class="col-lg-6 col-md-6 col-sm-12" style="margin-top: 20px;"
-                data-animation="fadeInUp"
-                data-delay="0.${index + 1}"
-                style="transform: translate(0px, 0px); opacity: 1;">
+        <div class="col-lg-6 col-md-6 col-sm-12" 
+            style="margin-top: 20px; border-bottom: 1px solid #e0e0e0; padding-bottom: 20px;"
+            data-animation="fadeInUp"
+            data-delay="0.${index + 1}"
+            >
 
-                <div class="single-blog-area-one column-reverse">
-                    <p>
-                        ${article.categories?.[0] ?? 'Artikel'} /
-                        <span>virologi.info</span>
-                    </p>
+            <div class="single-blog-area-one column-reverse">
+                <p>
+                    ${article.categories?.[0] ?? 'Artikel'} /
+                    <span>virologi.info</span>
+                </p>
 
-                    <a href="/blog/${article.slug}">
-                        <h4 class="title">${article.title}</h4>
+                <a href="/blog/${article.slug}">
+                    <h4 class="title">${article.title}</h4>
+                </a>
+
+                <div class="bottom-details">
+                    <a href="/blog/${article.slug}" class="thumbnail">
+                        <img
+                            src="${article.thumbnail ?? '/assets/images/blog/default.jpg'}"
+                            alt="${article.title}"
+                            loading="lazy"
+                            style="width:100%; height:220px; object-fit:cover;"
+                        >
                     </a>
-
-                    <div class="bottom-details">
-                        <a href="/blog/${article.slug}" class="thumbnail">
-                            <img
-                                src="${article.thumbnail ?? '/assets/images/blog/default.jpg'}"
-                                alt="${article.title}"
-                                loading="lazy"
-                                style="width:100%; height:220px; object-fit:cover;"
-                            >
-                        </a>
-                    </div>
                 </div>
             </div>
+        </div>
         `)
             })
         }
+
 
         function renderPagination(meta) {
             const el = document.getElementById('pagination')
