@@ -3,6 +3,30 @@
 @section('title', 'E-Books & Learning Resources')
 
 @section('content')
+    <style>
+        .ebook-card {
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all .25s ease;
+        }
+
+        .ebook-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 12px 28px rgba(0, 0, 0, .12);
+        }
+
+        .ebook-thumb {
+            background: #f8fafc;
+            padding: 16px;
+        }
+
+        .ebook-thumb img {
+            width: 100%;
+            height: 220px;
+            object-fit: contain;
+            display: block;
+        }
+    </style>
     {{-- ===============================
         BREADCRUMB
     =============================== --}}
@@ -90,51 +114,60 @@
 
             if (!Array.isArray(ebooks) || ebooks.length === 0) {
                 el.innerHTML = `
-                <div class="col-12 text-center text-muted py-5">
-                    Belum ada e-book tersedia
-                </div>
-            `
+            <div class="col-12 text-center text-muted py-5">
+                Belum ada e-book tersedia
+            </div>
+        `
                 return
             }
 
             ebooks.forEach((ebook, index) => {
+                const cover = ebook.cover_image ??
+                    '/assets/images/placeholder/ebook.png'
+
                 el.insertAdjacentHTML('beforeend', `
-                <div class="col-lg-6 col-md-6 col-sm-12"
-                     data-animation="fadeInUp"
-                     data-delay="0.${index + 1}">
+            <div class="col-lg-6 col-md-6 col-sm-12 mb-4"
+                 data-animation="fadeInUp"
+                 data-delay="0.${index + 1}">
 
-                    <div class="single-blog-area-one column-reverse">
+                <div class="card ebook-card h-100 border-0 shadow-sm">
 
-                        <p>
+                    <a href="/ebooks/${ebook.slug}" class="ebook-thumb">
+                        <img
+                            src="${cover}"
+                            alt="${escapeHtml(ebook.title)}"
+                            loading="lazy"
+                        >
+                    </a>
+
+                    <div class="card-body d-flex flex-column">
+                        <small class="text-muted mb-2">
                             ${ebook.topic.replaceAll('_',' ')} /
-                            <span>${ebook.level}</span>
-                        </p>
+                            <span class="text-primary">${ebook.level}</span>
+                        </small>
 
-                        <a href="/ebooks/${ebook.slug}">
-                            <h4 class="title">${escapeHtml(ebook.title)}</h4>
+                        <a href="/ebooks/${ebook.slug}" class="text-decoration-none">
+                            <h5 class="card-title mb-2">
+                                ${escapeHtml(ebook.title)}
+                            </h5>
                         </a>
 
                         ${ebook.subtitle ? `
-                                    <p class="disc mt-2">
+                                    <p class="card-text text-muted flex-grow-1">
                                         ${escapeHtml(ebook.subtitle)}
                                     </p>
                                 ` : ''}
 
-                        <div class="bottom-details">
-                            <a href="/ebooks/${ebook.slug}" class="thumbnail">
-                                <img
-                                    src="${ebook.cover_image ?? '/assets/images/placeholder/ebook.png'}"
-                                    alt="${escapeHtml(ebook.title)}"
-                                    loading="lazy"
-                                    style="width:100%; height:220px; object-fit:contain;"
-                                >
-                            </a>
-                        </div>
+                        <a href="/ebooks/${ebook.slug}" class="mt-3 fw-semibold text-primary">
+                            Baca e-book →
+                        </a>
                     </div>
                 </div>
-            `)
+            </div>
+        `)
             })
         }
+
 
         function renderPagination(meta) {
             const el = document.getElementById('pagination')
