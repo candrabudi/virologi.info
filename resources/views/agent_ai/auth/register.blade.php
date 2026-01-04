@@ -9,6 +9,99 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" rel="stylesheet">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <style>
+        /* Toast Container */
+        #toast-container {
+            position: fixed;
+            top: 16px;
+            right: 16px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        /* Toast Base */
+        .toast {
+            min-width: 240px;
+            max-width: 320px;
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-size: 14px;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, .15);
+            animation: slideIn .3s ease forwards;
+        }
+
+        /* Icons */
+        .toast-icon {
+            font-size: 16px;
+            line-height: 1;
+        }
+
+        /* Types */
+        .toast-success {
+            background: #16a34a;
+        }
+
+        .toast-error {
+            background: #dc2626;
+        }
+
+        .toast-warning {
+            background: #d97706;
+        }
+
+        .toast-info {
+            background: #2563eb;
+        }
+
+        /* Animations */
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes fadeOut {
+            to {
+                opacity: 0;
+                transform: translateX(30px);
+            }
+        }
+
+        /* 📱 Mobile */
+        @media (max-width: 640px) {
+            #toast-container {
+                left: 50%;
+                right: auto;
+                transform: translateX(-50%);
+                top: 10px;
+            }
+
+            .toast {
+                min-width: unset;
+                max-width: 90vw;
+                font-size: 12px;
+                padding: 8px 12px;
+                border-radius: 8px;
+            }
+
+            .toast-icon {
+                font-size: 14px;
+            }
+        }
+    </style>
+
+    <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap');
 
         :root {
@@ -155,7 +248,7 @@
         }
 
         .auth-input::placeholder {
-            color: #444;
+            color: #fff;
             transition: color 0.3s;
         }
 
@@ -230,6 +323,8 @@
 </head>
 
 <body>
+    <div id="toast-container"></div>
+
     <div class="noise-overlay"></div>
 
     <!-- Desktop Visual -->
@@ -292,10 +387,10 @@
 
                     <div class="group space-y-2">
                         <label class="text-[10px] font-black uppercase tracking-[0.2em] text-gray-700 ml-1">
-                            WhatsApp
+                            WhatsApp (Opsional)
                         </label>
                         <input name="phone_number" type="tel" inputmode="numeric" placeholder="08..."
-                            class="auth-input" required>
+                            class="auth-input">
                     </div>
                 </div>
 
@@ -324,7 +419,7 @@
             <div class="mt-10 text-center">
                 <p class="text-xs text-gray-500 font-medium">
                     Sudah punya akses?
-                    <a href="#"
+                    <a href="/ai-agent/login"
                         class="text-white font-bold hover:underline underline-offset-4 decoration-gray-600">
                         Login Sekarang
                     </a>
@@ -349,16 +444,34 @@
         axios.defaults.headers.common['X-CSRF-TOKEN'] =
             document.querySelector('meta[name="csrf-token"]').getAttribute('content')
 
+        /**
+         * Custom Toast (No SweetAlert)
+         */
         function toast(type, message) {
-            Swal.fire({
-                toast: true,
-                position: 'top-end',
-                icon: type,
-                title: message,
-                showConfirmButton: false,
-                timer: 3000,
-                timerProgressBar: true
-            })
+            const container = document.getElementById('toast-container')
+            if (!container) return
+
+            const toast = document.createElement('div')
+            toast.className = `toast toast-${type}`
+
+            const iconMap = {
+                success: '✔',
+                error: '✖',
+                warning: '⚠',
+                info: 'ℹ'
+            }
+
+            toast.innerHTML = `
+            <span class="toast-icon">${iconMap[type] || ''}</span>
+            <span>${message}</span>
+        `
+
+            container.appendChild(toast)
+
+            setTimeout(() => {
+                toast.style.animation = 'fadeOut .3s ease forwards'
+                setTimeout(() => toast.remove(), 300)
+            }, 2800)
         }
 
         function handleRegister(e) {
@@ -369,7 +482,7 @@
 
             const fullName = form.full_name.value.trim()
             const username = form.username.value.trim()
-            const phone = form.phone_number.value.trim()
+            const phone = form.phone_number.value.trim() // OPTIONAL
             const email = form.email.value.trim()
             const password = form.password.value
 
@@ -379,10 +492,14 @@
             }
 
             if (!/^[a-z0-9_]{4,50}$/.test(username)) {
-                return toast('error', 'Username hanya boleh huruf kecil, angka, dan underscore (min. 4 karakter).')
+                return toast(
+                    'error',
+                    'Username hanya boleh huruf kecil, angka, dan underscore (min. 4 karakter).'
+                )
             }
 
-            if (!/^08[0-9]{8,12}$/.test(phone)) {
+            // WhatsApp OPTIONAL
+            if (phone.length > 0 && !/^08[0-9]{8,12}$/.test(phone)) {
                 return toast('error', 'Format nomor WhatsApp tidak valid.')
             }
 
@@ -401,9 +518,7 @@
             btn.disabled = true
             btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Memproses...'
 
-            const data = new FormData(form)
-
-            axios.post('/ai-agent/register', data)
+            axios.post('/ai-agent/register', new FormData(form))
                 .then(res => {
                     toast('success', 'Registrasi berhasil')
                     window.location.href = res.data.data.redirect
@@ -428,7 +543,6 @@
                 })
         }
     </script>
-
 
 </body>
 

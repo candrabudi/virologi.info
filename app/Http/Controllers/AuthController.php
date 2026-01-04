@@ -85,7 +85,6 @@ class AuthController extends Controller
                     'unique:users,username',
                 ],
                 'phone_number' => [
-                    'required',
                     'string',
                     'max:20',
                     'regex:/^08[0-9]{8,12}$/',
