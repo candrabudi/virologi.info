@@ -71,51 +71,47 @@
         }
 
         function renderArticles(articles) {
-            const el = document.getElementById('blogGrid')
-            el.innerHTML = ''
+    const el = document.getElementById('blogGrid')
+    el.innerHTML = ''
 
-            if (!Array.isArray(articles) || articles.length === 0) {
-                el.innerHTML = `
+    if (!Array.isArray(articles) || articles.length === 0) {
+        el.innerHTML = `
         <div class="col-12 text-center text-muted py-5">
             Tidak ada artikel ditemukan
         </div>
         `
-                return
-            }
+        return
+    }
 
-            articles.forEach((article, index) => {
-                el.insertAdjacentHTML('beforeend', `
-        <div class="col-lg-6 col-md-6 col-sm-12" 
-            style="margin-top: 20px; border-bottom: 1px solid #e0e0e0; padding-bottom: 20px;"
+    articles.forEach((article, index) => {
+        el.insertAdjacentHTML('beforeend', `
+        <div class="col-lg-6 col-md-6 col-sm-12 mb-4" 
             data-animation="fadeInUp"
-            data-delay="0.${index + 1}"
-            >
+            data-delay="0.${index + 1}">
 
-            <div class="single-blog-area-one column-reverse">
-                <p>
-                    ${article.categories?.[0] ?? 'Artikel'} /
-                    <span>virologi.info</span>
-                </p>
-
+            <div class="card h-100 shadow-sm">
                 <a href="/blog/${article.slug}">
-                    <h4 class="title">${article.title}</h4>
+                    <img
+                        src="${article.thumbnail ?? '/assets/images/blog/default.jpg'}"
+                        class="card-img-top"
+                        alt="${article.title}"
+                        style="height:220px; object-fit:cover;"
+                    >
                 </a>
 
-                <div class="bottom-details">
-                    <a href="/blog/${article.slug}" class="thumbnail">
-                        <img
-                            src="${article.thumbnail ?? '/assets/images/blog/default.jpg'}"
-                            alt="${article.title}"
-                            loading="lazy"
-                            style="width:100%; height:220px; object-fit:cover;"
-                        >
+                <div class="card-body d-flex flex-column">
+                    <p class="text-muted mb-2">
+                        ${article.categories?.[0] ?? 'Artikel'} / <span>virologi.info</span>
+                    </p>
+                    <a href="/blog/${article.slug}" class="text-decoration-none">
+                        <h5 class="card-title">${article.title}</h5>
                     </a>
                 </div>
             </div>
         </div>
         `)
-            })
-        }
+    })
+}
 
 
         function renderPagination(meta) {
