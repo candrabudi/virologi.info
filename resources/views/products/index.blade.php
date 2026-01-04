@@ -75,70 +75,75 @@
             }
         }
 
-        function renderProducts(products) {
-            const el = document.getElementById('productGrid')
-            el.innerHTML = ''
+       function renderProducts(products) {
+    const el = document.getElementById('productGrid')
+    el.innerHTML = ''
 
-            if (!Array.isArray(products) || products.length === 0) {
-                el.innerHTML = `
+    if (!Array.isArray(products) || products.length === 0) {
+        el.innerHTML = `
             <div class="col-12 text-center text-muted py-5">
                 Belum ada produk tersedia
             </div>
         `
-                return
-            }
+        return
+    }
 
-            products.forEach((product, index) => {
-                el.insertAdjacentHTML('beforeend', `
-            <div class="col-lg-4 col-md-6 col-sm-12"
+    products.forEach((product, index) => {
+        el.insertAdjacentHTML('beforeend', `
+            <div class="col-lg-6 col-md-6 col-sm-12"
                 data-animation="fadeInUp"
                 data-delay="0.${index + 1}">
 
-                <div class="card h-100 border-0 shadow-sm product-card">
+                <div class="border rounded-3 p-4 h-100 bg-white product-box">
 
-                    <a href="/products/${product.slug}" class="position-relative">
-                        <img
-                            src="${product.thumbnail ?? '/assets/images/placeholder/product.png'}"
-                            class="card-img-top"
-                            alt="${escapeHtml(product.name)}"
-                            loading="lazy"
-                            style="height:220px; object-fit:cover;"
-                        >
-                        <span class="badge bg-dark position-absolute top-0 start-0 m-3">
-                            ${product.product_type ?? 'Product'}
-                        </span>
-                    </a>
+                    <div class="row g-3 align-items-center">
 
-                    <div class="card-body d-flex flex-column">
+                        <div class="col-4">
+                            <img
+                                src="${product.thumbnail ?? '/assets/images/placeholder/product.png'}"
+                                alt="${escapeHtml(product.name)}"
+                                loading="lazy"
+                                style="width:100%; max-height:160px; object-fit:cover;"
+                            >
+                        </div>
 
-                        <small class="text-muted mb-2">
-                            ${product.ai_domain?.replaceAll('_', ' ') ?? 'security'}
-                        </small>
+                        <div class="col-8">
 
-                        <h5 class="card-title">
-                            <a href="/products/${product.slug}" class="text-dark text-decoration-none">
-                                ${escapeHtml(product.name)}
-                            </a>
-                        </h5>
+                            <div class="mb-2">
+                                <span class="badge bg-dark">
+                                    ${product.product_type ?? 'Product'}
+                                </span>
+                                <span class="badge bg-light text-dark border ms-1">
+                                    ${product.ai_domain?.replaceAll('_', ' ') ?? 'security'}
+                                </span>
+                            </div>
 
-                        ${product.summary ? `
-                                <p class="card-text text-muted mt-2">
+                            <h5 class="fw-semibold mb-2">
+                                <a href="/products/${product.slug}" class="text-dark text-decoration-none">
+                                    ${escapeHtml(product.name)}
+                                </a>
+                            </h5>
+
+                            ${product.summary ? `
+                                <p class="text-muted small mb-3">
                                     ${escapeHtml(product.summary)}
                                 </p>
                             ` : ''}
 
-                        <div class="mt-auto">
-                            <a href="/products/${product.slug}" class="btn btn-outline-dark btn-sm w-100">
+                            <a href="/products/${product.slug}" class="btn btn-outline-dark btn-sm">
                                 Lihat Detail
                             </a>
+
                         </div>
 
                     </div>
+
                 </div>
             </div>
         `)
-            })
-        }
+    })
+}
+
 
 
         function renderPagination(meta) {
