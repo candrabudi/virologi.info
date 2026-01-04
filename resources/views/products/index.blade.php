@@ -94,28 +94,30 @@
             }
 
             products.forEach((product, index) => {
+                const thumbnail = product.thumbnail ?? '/assets/images/placeholder/product.png'
+
                 el.insertAdjacentHTML('beforeend', `
             <div class="col-lg-6 col-md-6 col-sm-12"
                 data-animation="fadeInUp"
                 data-delay="0.${index + 1}">
 
-                <div class="border rounded-4 p-4 h-100 bg-white product-box shadow-sm">
+                <div class="border rounded-4 p-4 h-100 bg-white shadow-sm product-box">
 
                     <div class="row g-4 align-items-center">
 
-                        <!-- Thumbnail box (FIXED & RATA) -->
+                        <!-- Background Thumbnail -->
                         <div class="col-4">
-                            <div
-                                class="border rounded-3 d-flex align-items-center justify-content-center bg-light"
-                                style="width:100%; height:160px;"
-                            >
-                                <img
-                                    src="${product.thumbnail ?? '/assets/images/placeholder/product.png'}"
-                                    alt="${escapeHtml(product.name)}"
-                                    loading="lazy"
-                                    style="max-width:100%; max-height:100%; object-fit:contain;"
-                                >
-                            </div>
+                            <a href="/products/${product.slug}"
+                               class="d-block rounded-3 bg-light border"
+                               style="
+                                    width:100%;
+                                    height:160px;
+                                    background-image:url('${thumbnail}');
+                                    background-size:contain;
+                                    background-position:center;
+                                    background-repeat:no-repeat;
+                               ">
+                            </a>
                         </div>
 
                         <!-- Content -->
