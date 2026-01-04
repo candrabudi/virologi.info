@@ -1,6 +1,30 @@
 @extends('template.app')
 
 @section('content')
+    <style>
+        .product-card {
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all .25s ease;
+        }
+
+        .product-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 12px 28px rgba(0, 0, 0, .12);
+        }
+
+        .product-thumb img {
+            width: 100%;
+            height: 220px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+    </style>
     {{-- ===============================
         BREADCRUMB
     =============================== --}}
@@ -81,52 +105,62 @@
 
             if (!Array.isArray(products) || products.length === 0) {
                 el.innerHTML = `
-                <div class="col-12 text-center text-muted py-5">
-                    Belum ada produk tersedia
-                </div>
-            `
+            <div class="col-12 text-center text-muted py-5">
+                Belum ada produk tersedia
+            </div>
+        `
                 return
             }
 
             products.forEach((product, index) => {
+                const thumbnail = product.thumbnail ??
+                    '/assets/images/placeholder/product.png'
+
                 el.insertAdjacentHTML('beforeend', `
-                <div class="col-lg-6 col-md-6 col-sm-12"
-                    data-animation="fadeInUp"
-                    data-delay="0.${index + 1}"
-                    style="transform: translate(0px, 0px); opacity: 1;">
+            <div class="col-lg-6 col-md-6 col-sm-12 mb-4"
+                data-animation="fadeInUp"
+                data-delay="0.${index + 1}">
 
-                    <div class="single-blog-area-one column-reverse">
+                <div class="card product-card h-100 border-0 shadow-sm">
 
-                        <p>
+                    <a href="/products/${product.slug}" class="product-thumb">
+                        <img
+                            src="${thumbnail}"
+                            alt="${escapeHtml(product.name)}"
+                            loading="lazy"
+                        >
+                    </a>
+
+                    <div class="card-body d-flex flex-column">
+                        <small class="text-muted mb-2">
                             ${product.product_type ?? 'Product'} /
-                            <span>${product.ai_domain?.replaceAll('_',' ') ?? 'security'}</span>
-                        </p>
+                            <span class="text-primary">
+                                ${product.ai_domain?.replaceAll('_',' ') ?? 'security'}
+                            </span>
+                        </small>
 
-                        <a href="/products/${product.slug}">
-                            <h4 class="title">${escapeHtml(product.name)}</h4>
+                        <a href="/products/${product.slug}" class="text-decoration-none">
+                            <h5 class="card-title mb-2">
+                                ${escapeHtml(product.name)}
+                            </h5>
                         </a>
 
                         ${product.summary ? `
-                                <p class="disc mt-2">
-                                    ${escapeHtml(product.summary)}
-                                </p>
-                            ` : ''}
+                                    <p class="card-text text-muted flex-grow-1">
+                                        ${escapeHtml(product.summary)}
+                                    </p>
+                                ` : ''}
 
-                        <div class="bottom-details">
-                            <a href="/products/${product.slug}" class="thumbnail">
-                                <img
-                                    src="${product.thumbnail ?? '/assets/images/placeholder/product.png'}"
-                                    alt="${escapeHtml(product.name)}"
-                                    loading="lazy"
-                                    style="width:100%; height:220px; object-fit:cover;"
-                                >
-                            </a>
-                        </div>
+                        <a href="/products/${product.slug}" class="mt-3 fw-semibold text-primary">
+                            Lihat produk →
+                        </a>
                     </div>
                 </div>
-            `)
+            </div>
+        `)
             })
         }
+
 
         function renderPagination(meta) {
             const el = document.getElementById('pagination')
