@@ -1,6 +1,30 @@
 @extends('template.app')
 
 @section('content')
+    <style>
+        .service-card {
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.25s ease;
+        }
+
+        .service-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+        }
+
+        .service-thumb img {
+            width: 100%;
+            height: 220px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+    </style>
     <div class="rts-breadcrumb-area">
         <div class="container">
             <div class="row">
@@ -72,76 +96,66 @@
             }
         }
 
-       function renderServices(services) {
-    const el = document.getElementById('serviceGrid')
-    el.innerHTML = ''
+        function renderServices(services) {
+            const el = document.getElementById('serviceGrid')
+            el.innerHTML = ''
 
-    if (!Array.isArray(services) || services.length === 0) {
-        el.innerHTML = `
+            if (!Array.isArray(services) || services.length === 0) {
+                el.innerHTML = `
             <div class="col-12 text-center text-muted py-5">
                 Belum ada layanan tersedia
             </div>
         `
-        return
-    }
+                return
+            }
 
-    services.forEach((service, index) => {
-        const thumbnail = service.thumbnail ?? '/assets/images/placeholder/service.png'
+            services.forEach((service, index) => {
+                const thumbnail = service.thumbnail ?
+                    service.thumbnail :
+                    '/assets/images/placeholder/service.png'
 
-        el.insertAdjacentHTML('beforeend', `
-            <div class="col-lg-6 col-md-6 col-sm-12"
+                el.insertAdjacentHTML('beforeend', `
+            <div class="col-lg-6 col-md-6 col-sm-12 mb-4"
                 data-animation="fadeInUp"
                 data-delay="0.${index + 1}">
 
-                <div class="border rounded-3 p-4 h-100 bg-white service-box">
+                <div class="card service-card h-100 border-0 shadow-sm">
+                    
+                    <a href="/services/${service.slug}" class="service-thumb">
+                        <img
+                            src="${thumbnail}"
+                            alt="${escapeHtml(service.name)}"
+                            loading="lazy"
+                        >
+                    </a>
 
-                    <div class="row g-3 align-items-center">
+                    <div class="card-body d-flex flex-column">
+                        <small class="text-muted mb-2">
+                            ${service.category.replaceAll('_',' ')} /
+                            <span class="text-primary">cyber security</span>
+                        </small>
 
-                        <div class="col-4">
-                            <img
-                                src="${thumbnail}"
-                                alt="${escapeHtml(service.name)}"
-                                loading="lazy"
-                                style="width:100%; max-height:160px; object-fit:cover;"
-                            >
-                        </div>
-
-                        <div class="col-8">
-
-                            <div class="mb-2">
-                                <span class="badge bg-primary">
-                                    ${service.category.replaceAll('_', ' ')}
-                                </span>
-                                <span class="badge bg-light text-dark border ms-1">
-                                    cyber security
-                                </span>
-                            </div>
-
-                            <h5 class="fw-semibold mb-2">
-                                <a href="/services/${service.slug}" class="text-dark text-decoration-none">
-                                    ${escapeHtml(service.name)}
-                                </a>
+                        <a href="/services/${service.slug}" class="text-decoration-none">
+                            <h5 class="card-title mb-2">
+                                ${escapeHtml(service.name)}
                             </h5>
+                        </a>
 
-                            ${service.summary ? `
-                                <p class="text-muted small mb-3">
-                                    ${escapeHtml(service.summary)}
-                                </p>
-                            ` : ''}
+                        ${service.summary ? `
+                                    <p class="card-text text-muted flex-grow-1">
+                                        ${escapeHtml(service.summary)}
+                                    </p>
+                                ` : ''}
 
-                            <a href="/services/${service.slug}" class="btn btn-outline-primary btn-sm">
-                                Lihat Layanan
-                            </a>
-
-                        </div>
-
+                        <a href="/services/${service.slug}" class="mt-3 text-primary fw-semibold">
+                            Lihat detail →
+                        </a>
                     </div>
-
                 </div>
             </div>
         `)
-    })
-}
+            })
+        }
 
 
         function renderPagination(meta) {

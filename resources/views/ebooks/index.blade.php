@@ -90,64 +90,49 @@
 
             if (!Array.isArray(ebooks) || ebooks.length === 0) {
                 el.innerHTML = `
-            <div class="col-12 text-center text-muted py-5">
-                Belum ada e-book tersedia
-            </div>
-        `
+                <div class="col-12 text-center text-muted py-5">
+                    Belum ada e-book tersedia
+                </div>
+            `
                 return
             }
 
             ebooks.forEach((ebook, index) => {
                 el.insertAdjacentHTML('beforeend', `
-            <div class="col-lg-6 col-md-6 col-sm-12"
-                data-animation="fadeInUp"
-                data-delay="0.${index + 1}">
+                <div class="col-lg-6 col-md-6 col-sm-12"
+                     data-animation="fadeInUp"
+                     data-delay="0.${index + 1}">
 
-                <div class="border rounded-3 p-4 h-100 bg-white ebook-box">
+                    <div class="single-blog-area-one column-reverse">
 
-                    <div class="row g-3 align-items-center">
+                        <p>
+                            ${ebook.topic.replaceAll('_',' ')} /
+                            <span>${ebook.level}</span>
+                        </p>
 
-                        <div class="col-4">
-                            <img
-                                src="${ebook.cover_image ?? '/assets/images/placeholder/ebook.png'}"
-                                alt="${escapeHtml(ebook.title)}"
-                                loading="lazy"
-                                style="width:100%; max-height:160px; object-fit:contain;"
-                            >
-                        </div>
+                        <a href="/ebooks/${ebook.slug}">
+                            <h4 class="title">${escapeHtml(ebook.title)}</h4>
+                        </a>
 
-                        <div class="col-8">
-                            <div class="mb-2">
-                                <span class="badge bg-light text-dark border">
-                                    ${ebook.topic.replaceAll('_', ' ')}
-                                </span>
-                                <span class="badge bg-secondary ms-1">
-                                    ${ebook.level}
-                                </span>
-                            </div>
-
-                            <h5 class="fw-semibold mb-2">
-                                <a href="/ebooks/${ebook.slug}" class="text-dark text-decoration-none">
-                                    ${escapeHtml(ebook.title)}
-                                </a>
-                            </h5>
-
-                            ${ebook.subtitle ? `
-                                    <p class="text-muted small mb-3">
+                        ${ebook.subtitle ? `
+                                    <p class="disc mt-2">
                                         ${escapeHtml(ebook.subtitle)}
                                     </p>
                                 ` : ''}
 
-                            <a href="/ebooks/${ebook.slug}" class="btn btn-outline-dark btn-sm">
-                                Lihat E-Book
+                        <div class="bottom-details">
+                            <a href="/ebooks/${ebook.slug}" class="thumbnail">
+                                <img
+                                    src="${ebook.cover_image ?? '/assets/images/placeholder/ebook.png'}"
+                                    alt="${escapeHtml(ebook.title)}"
+                                    loading="lazy"
+                                    style="width:100%; height:220px; object-fit:contain;"
+                                >
                             </a>
                         </div>
-
                     </div>
-
                 </div>
-            </div>
-        `)
+            `)
             })
         }
 

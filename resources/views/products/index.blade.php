@@ -75,90 +75,58 @@
             }
         }
 
-        function truncate(text, max = 80) {
-            if (!text) return ''
-            return text.length > max ? text.substring(0, max) + '...' : text
-        }
-
         function renderProducts(products) {
             const el = document.getElementById('productGrid')
             el.innerHTML = ''
 
             if (!Array.isArray(products) || products.length === 0) {
                 el.innerHTML = `
-            <div class="col-12 text-center text-muted py-5">
-                Belum ada produk tersedia
-            </div>
-        `
+                <div class="col-12 text-center text-muted py-5">
+                    Belum ada produk tersedia
+                </div>
+            `
                 return
             }
 
             products.forEach((product, index) => {
-                const thumbnail = product.thumbnail ?? '/assets/images/placeholder/product.png'
-
                 el.insertAdjacentHTML('beforeend', `
-            <div class="col-lg-6 col-md-6 col-sm-12"
-                data-animation="fadeInUp"
-                data-delay="0.${index + 1}">
+                <div class="col-lg-6 col-md-6 col-sm-12"
+                    data-animation="fadeInUp"
+                    data-delay="0.${index + 1}"
+                    style="transform: translate(0px, 0px); opacity: 1;">
 
-                <div class="border rounded-4 p-4 h-100 bg-white shadow-sm product-box">
+                    <div class="single-blog-area-one column-reverse">
 
-                    <div class="row g-4 align-items-center">
+                        <p>
+                            ${product.product_type ?? 'Product'} /
+                            <span>${product.ai_domain?.replaceAll('_',' ') ?? 'security'}</span>
+                        </p>
 
-                        <!-- Background Thumbnail -->
-                        <div class="col-4">
-                            <a href="/products/${product.slug}"
-                               class="d-block rounded-3 bg-light border"
-                               style="
-                                    width:100%;
-                                    height:160px;
-                                    background-image:url('${thumbnail}');
-                                    background-size:contain;
-                                    background-position:center;
-                                    background-repeat:no-repeat;
-                               ">
+                        <a href="/products/${product.slug}">
+                            <h4 class="title">${escapeHtml(product.name)}</h4>
+                        </a>
+
+                        ${product.summary ? `
+                                <p class="disc mt-2">
+                                    ${escapeHtml(product.summary)}
+                                </p>
+                            ` : ''}
+
+                        <div class="bottom-details">
+                            <a href="/products/${product.slug}" class="thumbnail">
+                                <img
+                                    src="${product.thumbnail ?? '/assets/images/placeholder/product.png'}"
+                                    alt="${escapeHtml(product.name)}"
+                                    loading="lazy"
+                                    style="width:100%; height:220px; object-fit:cover;"
+                                >
                             </a>
                         </div>
-
-                        <!-- Content -->
-                        <div class="col-8">
-
-                            <div class="mb-2">
-                                <span class="badge bg-dark fw-normal">
-                                    ${product.product_type ?? 'Product'}
-                                </span>
-                                <span class="badge bg-light text-dark border ms-1 fw-normal">
-                                    ${product.ai_domain?.replaceAll('_', ' ') ?? 'security'}
-                                </span>
-                            </div>
-
-                            <h5 class="fw-semibold mb-2 lh-sm">
-                                <a href="/products/${product.slug}" class="text-dark text-decoration-none">
-                                    ${escapeHtml(product.name)}
-                                </a>
-                            </h5>
-
-                            ${product.summary ? `
-                                    <p class="text-muted small mb-3">
-                                        ${escapeHtml(truncate(product.summary, 80))}
-                                    </p>
-                                ` : ''}
-
-                            <a href="/products/${product.slug}"
-                               class="btn btn-outline-dark btn-sm px-3">
-                                Lihat Detail
-                            </a>
-
-                        </div>
-
                     </div>
-
                 </div>
-            </div>
-        `)
+            `)
             })
         }
-
 
         function renderPagination(meta) {
             const el = document.getElementById('pagination')
