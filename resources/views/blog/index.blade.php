@@ -85,7 +85,7 @@
 
             articles.forEach((article, index) => {
                 el.insertAdjacentHTML('beforeend', `
-            <div class="col-lg-6 col-md-6 col-sm-12"
+            <div class="col-lg-6 col-md-6 col-sm-12" style="margin-top: 20px;"
                 data-animation="fadeInUp"
                 data-delay="0.${index + 1}"
                 style="transform: translate(0px, 0px); opacity: 1;">
